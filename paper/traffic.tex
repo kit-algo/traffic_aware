@@ -1,0 +1,807 @@
+
+\documentclass[a4paper,UKenglish,cleveref, autoref, thm-restate]{lipics-v2021}
+%This is a template for producing LIPIcs articles. 
+%See lipics-v2021-authors-guidelines.pdf for further information.
+%for A4 paper format use option "a4paper", for US-letter use option "letterpaper"
+%for british hyphenation rules use option "UKenglish", for american hyphenation rules use option "USenglish"
+%for section-numbered lemmas etc., use "numberwithinsect"
+%for enabling cleveref support, use "cleveref"
+%for enabling autoref support, use "autoref"
+%for anonymousing the authors (e.g. for double-blind review), add "anonymous"
+%for enabling thm-restate support, use "thm-restate"
+%for enabling a two-column layout for the author/affilation part (only applicable for > 6 authors), use "authorcolumns"
+%for producing a PDF according the PDF/A standard, add "pdfa"
+
+%\pdfoutput=1 %uncomment to ensure pdflatex processing (mandatatory e.g. to submit to arXiv)
+%\hideLIPIcs  %uncomment to remove references to LIPIcs series (logo, DOI, ...), e.g. when preparing a pre-final version to be uploaded to arXiv or another public repository
+
+%\graphicspath{{./graphics/}}%helpful if your graphic files are in another directory
+
+\bibliographystyle{plainurl}% the mandatory bibstyle
+
+\title{Dummy title} %TODO Please add
+
+%\titlerunning{Dummy short title} %TODO optional, please use if title is longer than one line
+
+\author{Jane {Open Access}}{Dummy University Computing Laboratory, [optional: Address], Country \and My second affiliation, Country \and \url{http://www.myhomepage.edu} }{johnqpublic@dummyuni.org}{https://orcid.org/0000-0002-1825-0097}{(Optional) author-specific funding acknowledgements}%TODO mandatory, please use full name; only 1 author per \author macro; first two parameters are mandatory, other parameters can be empty. Please provide at least the name of the affiliation and the country. The full address is optional. Use additional curly braces to indicate the correct name splitting when the last name consists of multiple name parts.
+
+\author{Joan R. Public\footnote{Optional footnote, e.g. to mark corresponding author}}{Department of Informatics, Dummy College, [optional: Address], Country}{joanrpublic@dummycollege.org}{[orcid]}{[funding]}
+
+\authorrunning{J. Open Access and J.\,R. Public} %TODO mandatory. First: Use abbreviated first/middle names. Second (only in severe cases): Use first author plus 'et al.'
+
+\Copyright{Jane Open Access and Joan R. Public} %TODO mandatory, please use full first names. LIPIcs license is "CC-BY";  http://creativecommons.org/licenses/by/3.0/
+
+\ccsdesc[100]{\textcolor{red}{Replace ccsdesc macro with valid one}} %TODO mandatory: Please choose ACM 2012 classifications from https://dl.acm.org/ccs/ccs_flat.cfm 
+
+\keywords{Dummy keyword} %TODO mandatory; please add comma-separated list of keywords
+
+\category{} %optional, e.g. invited paper
+
+\relatedversion{} %optional, e.g. full version hosted on arXiv, HAL, or other respository/website
+%\relatedversiondetails[linktext={opt. text shown instead of the URL}, cite=DBLP:books/mk/GrayR93]{Classification (e.g. Full Version, Extended Version, Previous Version}{URL to related version} %linktext and cite are optional
+
+%\supplement{}%optional, e.g. related research data, source code, ... hosted on a repository like zenodo, figshare, GitHub, ...
+%\supplementdetails[linktext={opt. text shown instead of the URL}, cite=DBLP:books/mk/GrayR93, subcategory={Description, Subcategory}, swhid={Software Heritage Identifier}]{General Classification (e.g. Software, Dataset, Model, ...)}{URL to related version} %linktext, cite, and subcategory are optional
+
+%\funding{(Optional) general funding statement \dots}%optional, to capture a funding statement, which applies to all authors. Please enter author specific funding statements as fifth argument of the \author macro.
+
+\acknowledgements{I want to thank \dots}%optional
+
+%\nolinenumbers %uncomment to disable line numbering
+
+
+
+%Editor-only macros:: begin (do not touch as author)%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\EventEditors{John Q. Open and Joan R. Access}
+\EventNoEds{2}
+\EventLongTitle{42nd Conference on Very Important Topics (CVIT 2016)}
+\EventShortTitle{CVIT 2016}
+\EventAcronym{CVIT}
+\EventYear{2016}
+\EventDate{December 24--27, 2016}
+\EventLocation{Little Whinging, United Kingdom}
+\EventLogo{}
+\SeriesVolume{42}
+\ArticleNo{23}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand*{\dist}{\mathcal{D}}
+\newcommand*{\shp}{\operatorname{OPT}}
+\newcommand*{\ubs}{\operatorname{UBS}}
+\newcommand*{\gchu}{G^{\uparrow}}
+\newcommand*{\gchd}{\overleftarrow{G^{\downarrow}}}
+
+\usepackage{tikz}
+\tikzstyle{node}=[circle,inner sep=0.5mm,minimum size=6.5mm,draw = black]
+\tikzstyle{snode}=[circle,minimum size=2mm,fill = black]
+
+\usepackage[algo2e,vlined]{algorithm2e}
+
+\begin{document}
+
+\maketitle
+
+%TODO mandatory: add short abstract of the document
+\begin{abstract}
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent convallis orci arcu, eu mollis dolor. Aliquam eleifend suscipit lacinia. Maecenas quam mi, porta ut lacinia sed, convallis ac dui. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse potenti. 
+\end{abstract}
+
+\newpage
+
+\section{Introduction}
+\subsection{Related Work}
+\cite{bdgmpsww-rptn-16}
+
+\section{Preliminaries}
+\label{sec:prelim}
+
+Let $G=(V,A)$ be a directed graph with $n = |V|$ nodes and $m = |A|$ arcs.
+We use $uv$ as a short notation for arcs.
+A weight function $w : A \to \mathbb{N}$ maps arcs to positive integers.
+The \emph{reversed} graph $\overleftarrow{G} := (V, \{ vu \mid uv \in A \})$ contains all arcs in reverse direction.
+The corresponding reversed weight function is $\overleftarrow{w}(vu) := w(uv)$.
+A sequence of nodes $P = (v_1, \dots, v_k)$ where $v_i v_{i+1} \in A$ is called a \emph{path}.
+We denote by $P_{i,j} = (v_i, \dots, v_j), 0 \leq i < j \leq k$ a \emph{subpath} of $P$.
+The length of a path with respect to a weight function $w$ is denoted by $w(P) = \sum w(v_i v_{i+1})$.
+We refer to a shortest path between two nodes $s$ and $t$ by $\shp_w(s,t)$ and call its length the \emph{distance} $\dist_w(s,t)$ between $s$ and $t$.
+
+Dijkstra's algorithm~\cite{d-ntpcg-59} computes $\dist_w(s,t)$ by traversing nodes by increasing distance from $s$ until $t$ is reached.
+Nodes are inserted into a priority queue when they are discovered.
+In each iteration the closest node $u$ is popped from the queue and its now final distance \emph{settled}.
+Outgoing arcs $uv$ are \emph{relaxed}, i.e. the algorithm checks if the path from $s$ to $v$ via $u$ is the shortest path known so far from $s$ to $v$.
+If this is the case, $v$ will be inserted into the priority queue.
+To keep track of the best-known distances, the algorithm maintains for each node $v$ a tentative distance $\mathtt{D}[v]$.
+By storing the predecessor node on the shortest path from $s$ to $v$ in a parent array $\mathtt{P}[v]$, shortest paths can be efficiently reconstructed.
+By construction, Dijkstra's algorithm visits all nodes closer to $s$ than the target.
+This \emph{search space} can be reduced with the A* algorithm~\cite{hnr-afbhd-68} by guiding the search towards the target.
+Here, the queue is ordered by $\mathtt{D}[v] + h_t(v)$ where $h_t$ is a \emph{heuristic} which estimates a lower bound of $\dist(v,t)$.
+
+\subsection{(C)CH-Potentials}
+
+Contraction Hierarchies (CH) is a two-phase speed-up technique to accelerate shortest path computations on road networks through precomputation.
+For a detailed discussion we refer to~\cite{gssv-erlrn-12}.
+Here, we only briefly introduce necessary notation and algorithms used in this paper.
+In a preprocessing phase, nodes are ordered totally by ``importance'' where more important nodes should lie on more shortest paths.
+Intuitively, nodes on highways are more important than nodes on some rural street.
+For CH, such an ordering is obtained heuristically.
+Then, all nodes are contracted successively by ascending importance.
+To \emph{contract} a node means to temporarily remove it from the graph while inserting \emph{shortcut arcs} between neighbors with higher rank to preserve shortest distances among them.
+The result is an \emph{augmented graph} $G^+$ with original arcs and shortcuts.
+$G^+$ can be split into $\gchu$ and $G^{\downarrow}$ where $\gchu$ only contains arcs $uv$ where $u$ is less important than $v$ and $G^{\downarrow}$ vice versa.
+The augmented graph has the property that for any two nodes $s$ and $t$, there always exists an \emph{up-down} $st$-path of shortest distance which first only uses only arcs from $\gchu$ and then only arcs from $G^{\downarrow}$.
+Such a path can be found by running Dijkstra's algorithm from $s$ on $\gchu$ and from $t$ on the reversed downward graph $\gchd$ graph.
+Reconstructing the full path without any shortcuts is possible by recursively unpacking shortcuts.
+For this, one can store for each shortcut the node which was contracted when the shortcut was inserted.
+The set of nodes reachable in $\gchu$ and $\gchd$ is called the \emph{CH search space} of a node.
+
+\begin{algorithm2e}
+\KwData{$\mathtt{D}^{\downarrow}[u]$: tentative distance from $u$ to $t$ as computed by Dijkstra's algorithm on $\gchd$}
+\KwData{$\mathtt{P}[u]$: parent node on the shortest path from $u$ to $t$, as computed Dijkstra's algorithm on $\gchd$}
+\KwData{$\mathtt{D}[u]$: memoized final distance from $u$ to $t$, initially $\bot$}
+\SetKwFunction{Dist}{ComputeAndMemoizeDist}
+\SetKwProg{Fn}{Function}{:}{}
+\Fn{\Dist{$u$}}{
+    \If{$\mathtt{D}[u] = \bot$}{
+        $\mathtt{D}[u]\leftarrow \mathtt{D}^{\downarrow}[u]$\;
+        \For{all edges $uv$ in $\gchu$}{
+            $d \leftarrow \Dist(v)$\;
+            \If{$\mathtt{D}[u] < d + w(uv)$}{
+                $\mathtt{D}[u] \leftarrow d + w(uv)$\;
+                $\mathtt{P}[u] \leftarrow v$\;
+            }
+        }
+    }
+    \Return{$\mathtt{D}[u]$}\;
+}
+\caption{Computing the distance from a single node $u$ to $t$ with Lazy RPHAST}
+\label{algo:lazy_rphast}
+\end{algorithm2e}
+
+Lazy RPHAST~\cite{strasser_et_al:LIPIcs.SEA.2021.6} is a CH-based algorithm to quickly compute distances from many nodes to a single target.
+Lazy RPHAST starts by running Dijkstra's algorithm from $t$ on $\gchd$, similar to a standard CH query.
+The forward search space, however, is explored through a recursive DFS-like search while memoizing distances to $t$ as depicted in Algorithm~\ref{algo:lazy_rphast}.
+This allows reusing the already computed distances for following sources.
+We employ Lazy RPHAST as both a many-to-one algorithm and as an A* heuristic.
+Lazy RPHAST as a A* heuristic is called CH-Potentials~\cite{strasser_et_al:LIPIcs.SEA.2021.6}.
+
+Our implementation extends on the original CH-Potentials algorithm by additionally storing parent pointers for path unpacking.
+Algorithm~\ref{algo:lazy_rphast} only yields paths through the CH search space.
+In Section~\ref{sec:lazy_rphast_path}, we introduce an algorithm to efficiently extract shortest path trees with unpacked shortcuts.
+Lazy RPHAST can be used analogously to compute distances from one node to many targets by swapping $\gchu$ and $\gchd$.
+
+Customizable Contraction Hierarchies (CCH)~\cite{dsw-cch-15} is a three-phase variant of CH.
+It allows fast updates to the preprocessing, for example to integrate information on the current traffic situation.
+However, this only touches the preprocessing.
+The result of the CCH preprocessing is also an augmented graph, only with some additional properties.
+Query algorithms can be reused from CH without any modification.
+For the algorithms we discuss in this paper, there is no practical difference between CH and CCH and we describe our algorithms based on augmented graphs.
+Our implementation is build on CCH-Potentials to support quick updates to live traffic weights.
+For a detailed discussion of the differences between CH and CCH and the changes to the preprocessing see~\cite{dsw-cch-15}.
+
+\subsection{Smooth Paths}
+
+The \emph{stretch} of a path is defined as $S_w(P) = \frac{w(P)}{\dist_w(v_1, v_k)}$, i.e. the ratio between the path length and the shortest distance between its endpoints.
+The \emph{uniformly bounded stretch} $\ubs_w(P) = \max_{0 \leq i < j \leq k}S(P_{i,j})$ indicates the maximum stretch over all subpaths.
+We observe the following useful property of UBS:
+\begin{observation}\label{obs:append_sp_ubs}
+The UBS of a path $P = (v_1, \dots, v_i, \dots, v_j \dots, v_k)$ where $P_{1,i} = \shp(v_1, v_i)$ and $P_{j,k} = \shp(v_j, v_k)$ can not be greater than $\ubs(P_{i,j})$.
+\end{observation}
+The reason for this is that the stretch of any subpath only decreases when appending optimal segments to the beginning or end.
+
+In~\cite{dss-tarrn-18}, Delling et al. introduce the shortest smooth path problem (SSPP).
+A path $P$ is $\epsilon$-smooth with regards to a metric $w$ when $\ubs_w(P) < 1 + \epsilon$.
+Given a graph $G$, nodes $s$ and $t$, a smooth weight function $w$ and a volatile weight function $w^*$ and a parameter $\epsilon > 0$, the shortest smooth path problem is to find the shortest path with respect to $w^*$ that is $\epsilon$-smooth with regards to $w$.
+
+\section{Complexity}
+
+\begin{figure}
+\centering
+\begin{tikzpicture}[]
+\node (w) at (-5,-1) [node] {$w$};
+\node (v) at (-2.8,-.2) [node] {$v$};
+\node (u) at (-4,1.4) [node] {$u$};
+
+\draw[->, line width=1pt] (u) -- (v);
+\draw[->, line width=1pt] (v) to [bend right=10] (w);
+\draw[->] (w) to [bend right=10] (v);
+
+\node (s) at (0,0) [node] {$s$};
+
+\node (u1) at (2,1.5) [node] {$u^1$};
+\node (v1) at (2,0) [node] {$v^1$};
+\node (w1) at (2,-1.5) [node] {$w^1$};
+
+\node (u2) at (4,1.5) [node] {$u^2$};
+\node (v2) at (4,0) [node] {$v^2$};
+\node (w2) at (4,-1.5) [node] {$w^2$};
+
+\node (u3) at (6,1.5) [node] {$u^3$};
+\node (v3) at (6,0) [node] {$v^3$};
+\node (w3) at (6,-1.5) [node] {$w^3$};
+
+\node (t) at (8,0) [node] {$t$};
+
+
+\draw[->, line width=1pt] (s) -- (u1) node [midway, above, sloped] { 1,1 };
+\draw[->] (s) -- (v1) node [midway, above=-1mm] { 1,1 };
+\draw[->] (s) -- (w1) node [midway, below, sloped] { 1,1 };
+\draw[->] (u3) -- (t) node [midway, above, sloped] { 1,1 };
+\draw[->] (v3) -- (t) node [midway, above=-1mm] { 1,1 };
+\draw[->, line width=1pt] (w3) -- (t) node [midway, below, sloped] { 1,1 };
+
+\draw[->] (u1) -- (u2) node [midway, above=-1mm] { 1,2 };
+\draw[->] (v1) -- (v2) node [midway, above=-1mm] { 1,2 };
+\draw[->] (w1) -- (w2) node [midway, below] { 1,2 };
+\draw[->] (u2) -- (u3) node [midway, above=-1mm] { 1,2 };
+\draw[->] (v2) -- (v3) node [midway, above=-1mm] { 1,2 };
+\draw[->] (w2) -- (w3) node [midway, below] { 1,2 };
+
+\draw[->, line width=1pt] (u1) -- (v2) node [midway, above=-1mm, sloped] { $1+\epsilon$,1 };
+\draw[->] (u2) -- (v3) node [midway, above=-1mm, sloped] { $1+\epsilon$,1 };
+
+\draw[->] (v1) to [bend left=35] node [pos=0.3, below, sloped] { $1+\epsilon$,1 } (w2);
+\draw[->] (w1) to [bend right=35] node [pos=0.3, above=-.8mm, sloped] { $1+\epsilon$,1 } (v2);
+\draw[->, line width=1pt] (v2) to [bend left=35] node [pos=0.3, below, sloped] { $1+\epsilon$,1 } (w3);
+\draw[->] (w2) to [bend right=35] node [pos=0.3, above=-.8mm, sloped] { $1+\epsilon$,1 } (v3);
+
+\end{tikzpicture}
+\caption{Illustration of our transformation from \textsc{HamiltonPath} to \textsc{ShortestSmoothPath}.
+The first arc weight is the smooth weight, the second the volatile weight.
+The thick arcs indicate a Hamiltonian path and the corresponding shortest $\epsilon$-smooth path.}
+\label{fig:transformation}
+\end{figure}
+
+Delling et al. show some relations between SSPP and Knapsack but the complexity remains open in their paper.
+In this section, we prove that SSPP is strongly $\mathcal{NP}$-complete for any $\epsilon \in \mathbb{Q}^{>0}$.
+An instance $(G, w, w^*, s, t, \epsilon, k)$ is a \emph{yes} instance of \textsc{ShortestSmoothPath-Dec} if and only if there exists a path $P = (s,\dots, t)$ in $G$ with $w^*(P) \leq k$ and $\ubs_w(P) < 1 + \epsilon$.
+
+\begin{theorem}
+\textsc{ShortestSmoothPath-Dec} is strongly $\mathcal{NP}$-complete.
+\end{theorem}
+
+\begin{proof}
+Checking a solution guessed by an oracle can be done in polynomial time.
+Determining the the path length in $w^*$ take running time linear in the path length.
+To check the UBS, shortest distances have to be computed for all $\mathcal{O}(|P|^2)$ subpaths.
+This shows that \textsc{ShortestSmoothPath-Dec} $\in \mathcal{NP}$.
+
+To prove the hardness, we give a reduction from the strongly $\mathcal{NP}$-complete \textsc{HamiltonPath} problem.
+Let $G=(V,A)$ be the Hamilton Path instance.
+To distinguish them from the nodes in the SSPP instance, we will denote the nodes in $V$ as \emph{vertices}.
+We construct our SSPP instance by replicating the vertices of $G$ into $n$ layers and adding two additional nodes $s$ and $t$.
+We connect successive layers with the original arcs and additional arcs between nodes corresponding to the same vertex.
+Any $(s,\dots,t)$ path has exactly $|V|+1$ arcs and has to traverses all layers.
+We will choose the arc weights in such a way that the shortest $\epsilon$-smooth path between $s$ and $t$ has to use a different vertex in each layer.
+Paths using the same vertex in different layers will always be non-$\epsilon$-smooth in $w$ or too long in $w^*$.
+
+Formally, we construct the graph $G'=(V',A')$ for our SSPP instance as follows:
+We set the nodes $V' = \{ v^i \mid v \in V, i \in [1,n] \} \cup \{s,t\}$.
+The arc set $A'$ is the union of three groups of arcs $A_{\operatorname{orig}}$, $A_{\operatorname{self}}$ and $A_{\operatorname{terminal}}$ where $A_{\operatorname{orig}} = \{ (u^i, v^{i+1}) \mid uv \in A, 1 \leq i < n \}$ are the arcs between the layers corresponding to arcs in the \textsc{HamiltonPath} instance, $A_{\operatorname{self}} = \{ (v^i, v^{i+1}) \mid v \in V, 1 \leq i < n \}$ are the additional arcs between the same vertices in successive layers and $A_{\operatorname{terminal}} = \{ (s, v^1) \mid v \in V \} \cup \{ (v^n, t) \mid v \in V \}$ are the arcs connecting the terminals with the first and last layer.
+In both weight functions, all arcs in $A_{\operatorname{terminal}}$ get the weight 1.
+The arcs in $A_{\operatorname{self}}$ get a volatile weight of 2 and a smooth weight of 1.
+The arcs in $A_{\operatorname{orig}}$ get a volatile weight of 1 and a smooth weight of $1+\epsilon$.
+Setting $k=|V|+1$, this forms our \textsc{ShortestSmoothPath-Dec} instance.
+This transformation has quadratic running time.
+See Figure~\ref{fig:transformation} for an illustrated example of the construction.
+For the sake of readability, we use non-integer weights of $1+\epsilon$ in this proof.
+The weights can be turned into integers by multiplying them with the denominator of $\epsilon$.
+
+Now, assume that the \textsc{HamiltonPath} instance admits a Hamiltonian path $P = (v_1, \dots, v_n)$.
+Then, $P' = (s, v_1^1, \dots, v_n^n, t)$ is a solution to the SSPP problem.
+The path uses two arcs from $A_{\operatorname{terminal}}$ and $|V|-1$ arcs from $A_{\operatorname{orig}}$.
+Thus, $w^{*}(P') = |V| + 1 = k$.
+Also, its $\ubs_w$ must be smaller than $1+\epsilon$.
+Due to Observation~\ref{obs:append_sp_ubs}, it is sufficient to show that the UBS is small enough for $P'' = (v_1^1, \dots, v_n^n)$.
+For any subpath $P''_{i,j} = (u^i, \dots v^j)$ for $i < j$, $u$ must not be equal to $v$ because $P$ is a Hamiltonian path.
+As all arcs are from $A_{\operatorname{orig}}$, $w(P''_{i,j})$ equals $(j-i) \cdot (1+\epsilon)$.
+The shortest path (with respect to $w$) between $u^i$ and $v^j$ has to use at least one $A_{\operatorname{orig}}$ arc because $u \neq v$.
+Thus, $\dist_w(P''_{i,j}) \geq (i - j - 1) + (1 + \epsilon)$.
+This yields
+\[
+\ubs_w(P''_{i,j}) = \frac{w(P''_{i,j})}{\dist_w(P''_{i,j})} \leq \frac{(j-i) \cdot (1+\epsilon)}{j-i+\epsilon} < \frac{(j-i) \cdot (1+\epsilon)}{j-i} = 1 + \epsilon
+\]
+which proves that $P'$ is valid solution for the SSPP instance.
+
+Conversely, suppose that our SSPP instance has an $\epsilon$-smooth path $P' = (s, v_1^1, \dots, v_n^n, t)$ of length $|V|+1$.
+Such a path can contain no arc from $A_{\operatorname{self}}$ because of the length with respect to $w$.
+We now show that no two nodes in the path can correspond to the same vertex and that $P = (v_1, \dots, v_n)$ is indeed a Hamiltonian path in $G$.
+Suppose for contraction that $P'_{i,j} = (v^i, \dots, v^j)$ was a subpath of $P'$.
+The length $w(P'_{i,j})$ is $(i-j) \cdot (1+\epsilon)$.
+Since start and end node correspond to the same vertex, the shortest path between these nodes is made up of arcs from $A_{\operatorname{self}}$ and has distance $\dist_w(v^i, v^j) = i-j$.
+Thus, $\ubs_w(P'_{i,j}) = (1+\epsilon)$ which means that this subpath must not be part of a solution for the SSPP instance.
+This is a contraction.
+Thus, the SSPP solution induces a valid solution for the \textsc{HamiltonPath} instance.
+\end{proof}
+% TODO get rid of superscript??
+
+\section{Algorithms}
+
+Delling et al. propose the Iterative Path Blocking (IPB) algorithm to solve the SSPP optimally.
+The algorithm loops over two phases until a valid path is found.
+It maintains a set of blocked paths.
+In the first phase, a shortest path with regards to $w^*$ is computed while avoiding any blocked paths.
+In the second phase, the obtained path is checked for subpaths violating the UBS constraint.
+Any violating subpaths are added to the list of blocked paths and the algorithm continues with another iteration.
+If no violating subpaths are found, the final path is returned.
+
+This framework can be implemented with different concrete algorithms for both phases.
+The implementation described in~\cite{dss-tarrn-18} is based on CRP~\cite{dgpw-crprn-13}.
+In this paper, we propose optimized implementations for both phases based on Lazy RPHAST and (C)CH-Potentials.
+
+\subsection{Avoiding Blocked Paths}
+
+\begin{figure}
+\centering
+\begin{tikzpicture}[]
+\node (s) at (0,0) [node] {$s$};
+\node (u) at (3,0) [node] {$u$};
+\node (v) at (6,0) [node] {$v$};
+\node (t) at (9,0) [node] {$t$};
+
+\draw[->] (s) -- (u) node [midway, above] { 3 };
+\draw[->] (u) -- (v) node [midway, above] { 2 };
+\draw[->] (v) -- (t) node [midway, below] { 1 };
+
+\draw[->] (s) to [bend right=30] node [midway, below] { 6 } (v);
+\draw[->] (u) to [bend left=30] node [midway, above] { 1, 10 } (t);
+\end{tikzpicture}
+\caption{Example graph where for $\epsilon = 2$ the shortest $\epsilon$-smooth path $(s,v,t)$ is not prefix-optimal. For all arcs except $ut$, the smooth and the volatile metric are equal. For $uv$, the smooth weight is 1 and the volatile weight 10.}
+\label{fig:ipb_counterexample}
+\end{figure}
+
+Delling et al. describe their approach to the first phase as a variant of Dijkstra's algorithm.
+When relaxing an arc $uv$ where $v$ is the endpoint of a blocked path, they backtrack the parent pointers of $v$ comparing the reconstructed path to the blocked path.
+Should the paths match, the search is pruned at $v$.
+This algorithm, however, to the best of our understanding, does not only avoid the paths in the blocked set.
+Because Dijkstra's algorithm in this variant will only find prefix optimal paths, it also avoids any detour onto nodes of a blocked path.
+This may cause this variant to miss valid paths.
+See Figure~\ref{fig:ipb_counterexample} for an example.
+The algorithm will find the path $(s,u,v,t)$ in the first iteration.
+This path is not 2-smooth because $(u,v,t)$ has stretch 3.
+The shortest 2-smooth path is $(s,v,t)$ but the algorithm will instead find $(s,u,t)$ because the path $(s,v)$ is not prefix optimal.
+We will refer to this variant from now on by \emph{iterative detour blocking} (IDB).
+IDB will still find a valid path though it may not necessarily be the shortest.
+Therefore, it is only a heuristic for the SSPP.
+
+% forbidden vs blocked path
+Only avoiding actually blocked paths requires a more careful adjustment of Dijkstra's algorithm.
+In addition to the distance from the source, we need to keep track of the currently relevant blocked paths.
+It might be necessary to keep a label with greater distance from the start when it uses less blocked paths (see the example from Figure~\ref{fig:ipb_counterexample} where the label for $(s,v)$ needs to be kept at $u$ despite being longer than $(s,u,v)$).
+Thus, each node $v$ may have multiple labels and the algorithm is only label-correcting.
+A \emph{label} $l$ consists of a distance from the source and a set of active blocked paths and a pointer to the parent node and label for efficient path reconstruction.
+A blocked path $B$ is \emph{active} in a label $l$ when there exist a suffix of $P^l = (s,\dots,v)$ the path represented by $l$ which is a prefix of $B$.
+Labels may be discarded only when there is another label with shorter or equal distance and where the blocked path set is a subset of the current label.
+
+The search is initialized with a single label at $s$ with distance zero and an empty set of active blocked paths.
+When a label $l$ is linked with an arc $uv$, we need to keep track of traversed blocked paths.
+When $uv$ is the first arc of a blocked path $P$, it needs to be added to the set of active blocked paths of the result label.
+For any active blocked path $B$ in $l$, we need to check if $uv$ lies on $B$.
+If this is the case, $B$ remains in the set of active blocked paths of the result label, or, if $uv$ is the last arc of $B$, the result label must be dropped.
+If $uv$ is not on $B$, the blocked path can be removed from the active blocked path set of the result label.
+
+An efficient implementation of this algorithm requires careful engineering.
+For each node, we keep track of the blocked paths it lies on.
+Labels use a bitset to store the active blocked paths.
+The bitsets are limited to the paths valid for the current node.
+This allows for efficient subset checks with bit-wise operations.
+% queue details?
+Finally, we utilize A* with CCH-Potentials to guide the search towards the target.
+As our experiments show, disallowing non $\epsilon$-smooth path increase distances only very little.
+Thus, the heuristic is close to perfect and A* very effective for this problem.
+
+\subsection{Efficient UBS Computation}
+
+\begin{figure}
+\centering
+\begin{tikzpicture}[]
+\node (s) at (0,0) [node]      {$v_1$};
+\node (1) at (1.5,0) [node]    {$v_2$};
+\node (2) at (3.3,-0.3) [node] {$v_3$};
+\node (3) at (4.5,-1.5) [node] {$v_4$};
+\node (4) at (6,0) [node]      {$v_5$};
+\node (5) at (7.5,1.5) [node]  {$v_6$};
+\node (6) at (8.7,0.3) [node]  {$v_7$};
+\node (7) at (10.5,0) [node]   {$v_8$};
+\node (t) at (12,0) [node]     {$v_9$};
+
+\draw[->, thick] (s) -- (1);
+\draw[->, thick] (1) -- (2);
+\draw[->, thick] (2) -- (3);
+\draw[->, thick] (3) -- (4);
+\draw[->, thick] (4) -- (5);
+\draw[->, thick] (5) -- (6);
+\draw[->, thick] (6) -- (7);
+\draw[->, thick] (7) -- (t);
+
+\draw[->, dashed, blue] (s) to [bend left=30] (1);
+\draw[->, dashed, blue] (1) to [bend left=30] (2);
+\draw[->, dashed, blue] (2) to [bend right=30] (3);
+\draw[->, dashed, blue] (2) to [bend left=10] (4);
+\draw[->, dashed, blue] (4) to [bend left=30] (5);
+\draw[->, dashed, blue] (4) to [bend left=10] (6);
+\draw[->, dashed, blue] (6) to [bend left=30] (7);
+\draw[->, dashed, blue] (7) to [bend left=30] (t);
+
+
+\draw[->, dashed, red] (7) to [bend right=30] (t);
+\draw[->, dashed, red] (6) to [bend right=30] (7);
+\draw[->, dashed, red] (3) to [bend right=20] (7);
+\draw[->, dashed, red] (5) to [bend left=30] (6);
+\draw[->, dashed, red] (4) to [bend right=10] (6);
+\draw[->, dashed, red] (2) to [bend right=10] (4);
+\draw[->, dashed, red] (1) to [bend right=30] (2);
+\draw[->, dashed, red] (s) to [bend right=30] (1);
+\end{tikzpicture}
+\caption{Example path (solid, black) with shortest path tree from $v_1$ to all nodes on the path (dashed, blue) and reverse shortest path tree from all nodes on the path to $v_9$ (dashed, red).}
+\label{fig:ubs_tree}
+\end{figure}
+
+According to~\cite{dss-tarrn-18}, the UBS computation is one of the bottlenecks of the IDB approach.
+They employ a many-to-many algorithm.
+Computing the UBS has been studied before in the context of alternative route algorithms~\cite{adgw-arrn-13}.
+The authors of this paper state that it would be ideal to check the UBS in time proportional to the length of the path and a few shortest path queries but due to the lack of such an option they resort to approximations.
+Here, we introduce an algorithm, which achieves this when possible.
+We also prove that this is not always possible by constructing a worst-case where each subpath has a distinct stretch value.
+
+Consider a path $P=(s=v_1,\dots,t=v_k)$ as depicted in Figure~\ref{fig:ubs_tree}.
+Our algorithm works iteratively.
+We start with the full path and successively chop of parts at the beginning and the end of the path until the path is empty or only a shortest path remains.
+We start by computing shortest distances from $s$ to all nodes on the path.
+This can be done with a single run of Dijkstra's algorithm which can terminate once all $v_i$ were settled.
+Beside the shortest distances, this yields a shortest path tree represented though parent pointers.
+We also run Dijkstra's algorithm from $t$ on the reversed graph which yields a backward shortest path tree to $t$.
+Now we find the greatest index $i$ such that $P_{1,i}$ is a prefix of all shortest paths $\shp(s, v_l)$ where $i < l \leq k$, i.e. the first branch in the forward shortest path tree.
+In the worst case this may be $s$.
+In the example in Figure~\ref{fig:ubs_tree} this is $v_3$.
+We analogously obtain the first branch in the reverse shortest path tree to $v_k$ ($v_8$ in our example).
+Stated formally, this is the smallest index $j$ such that $P_{j,k}$ is a suffix of all shortest paths $\shp(v_l, t)$ where $1 \leq l \leq j$.
+% how to find? early termination
+By Observation~\ref{obs:append_sp_ubs} subpaths starting from nodes in the segment $P_{1,i-1}$ and subpaths ending at nodes from $P_{j+1,k}$ are not relevant to the UBS computation.
+Checking the stretch for subpaths $P_{j,l}$ where $j < i, i < l \leq k$ is not necessary.
+We exploit this and only check paths starting from $v_i$ or ending at $v_j$ in the current iteration.
+
+We check the stretch of all subpaths $P_{i,l}$ where $i < l \leq j$ with a linear sweep over the $v_l$.
+Since $P_{1,i}$ is a prefix of all shortest paths from $s$, we can compute the distance $\dist(v_i, v_l)$ as $\dist(s, v_l) - \dist(s, v_i)$.
+Thus, each stretch can be checked in constant time with the distances computed by Dijkstra's algorithm.
+When we are only interested in violating subpaths (rather than computing the exact UBS value of $P$), the sweep can be stopped after the first (i.e. shortest) violating segment has been found.
+Forbidding the shortest violating segment starting at $v_i$ is sufficient because it is contained in all longer segments.
+Checking the stretches of the subpaths $P_{l,j}$ where $i \leq l < j$ works analogously.
+
+Having checked all these stretches, we continue with the next iteration by applying the whole algorithm to the subpath $P_{i+1,j-1}$.
+We can stop when $i+1 \geq j-i$ or when the whole considered path is a shortest path between its endpoints.
+
+% filtering covered
+
+\subsubsection{Worst-Case Running Time}
+
+This algorithm performs great when large segments are shortest paths, which will of course often be the case when searching shortest smooth paths.
+In the worst case however, it still has to check $\mathcal{O}(n^2)$ subpath stretches.
+Consider a complete graph with unit weights and the path $P=(v_1, \dots, v_n)$.
+In this graph the shortest path between any two nodes is always the direct arc and the distance is always exactly one.
+Thus, the shortest path tree from any node is just a star with the direct edges and our algorithm can only advance by a single node in each iteration.
+This results in a worst case running time of $n$ runs of Dijkstra's algorithm.
+
+We suspect that it is not possible to compute the UBS asymptotically faster.
+Consider the same graph as before but with weights of unique powers of two for the arcs of the path.
+Now any subpath has a unique length.
+As all subpaths of three or more nodes still have a shortest distance of one between their endpoints, we have $\mathcal{O}(n^2)$ unique stretch values.
+Thus, computing the UBS of the whole path without checking all $\mathcal{O}(n^2)$ stretch values should be difficult if not impossible.
+
+\subsubsection{Lazy RPHAST with Path Unpacking}
+\label{sec:lazy_rphast_path}
+
+While this algorithm typically needs only few stretch checks, running Dijkstra's algorithm a couple of times is still prohibitively slow on large road networks.
+Luckily, we can speed these computations up drastically by employing Lazy RPHAST, which we already used as a A* heuristic in the shortest path search phase.
+Recall that Lazy RPHAST allows us to select one target node and then to on demand compute shortest distances quickly from many nodes to this target.
+For the efficient UBS computation, we use two instantiations of this algorithm.
+In each iteration, we select both endpoints of the considered path and compute distances to the endpoints for all nodes on the path.
+However, we also need the shortest path trees.
+We propose an extension to Lazy RPHAST to incrementally compute shortest path trees.
+Algorithm~\ref{algo:lazy_rphast_path} depicts this routine.
+
+\begin{algorithm2e}
+\KwData{$\mathtt{P}[u]$: parent node on the shortest path from $u$ to $t$, as computed by Algorithm~\ref{algo:lazy_rphast}}
+\KwData{$\mathtt{U}[u]$: whether the path from $u$ to $t$ has been fully unpacked}
+\SetKwFunction{Dist}{ComputeAndMemoizeDist}
+\SetKwFunction{Unpack}{Unpack}
+\SetKw{True}{true}
+\SetKwProg{Fn}{Function}{:}{}
+
+\Fn{$\Unpack(u)$}{
+    \If{$\neg (\mathtt{U}[u] \lor u = t)$}{
+        $\Dist(u)$\;
+        $\Unpack(\mathtt{P}[u])$\;
+
+        \If{$(u, \mathtt{P}[u])$ is a shortcut for $(u, v, \mathtt{P}[u])$}{
+            $\mathtt{P}[v] \leftarrow \mathtt{P}[u]$\;
+            $\Unpack(v)$\;
+            $\mathtt{P}[u] \leftarrow w$\;
+            $\Unpack(u)$\;
+        }
+        $\mathtt{U}[u] \leftarrow \True$\;
+    }
+}
+\caption{Path unpacking for Lazy RPHAST}
+\label{algo:lazy_rphast_path}
+\end{algorithm2e}
+
+Parent pointers were already maintained throughout the execution of Algorithm~\ref{algo:lazy_rphast}.
+Thus, after having called \texttt{ComputeAndMemoizeDist}, we already have the shortest path through the CH search space.
+Algorithm~\ref{algo:lazy_rphast_path} recursively unpacks this path to the full shortest path in the original graph.
+We use a bitvector $\mathtt{U}$ to mark nodes for which the shortest path has already been fully unpacked which is checked before any actual work is performed.
+Then, we call \texttt{ComputeAndMemoizeDist} to ensure, that the path through the CH search space has been obtained.
+This might have not happened before for nodes we encounter through shortcut unpacking.
+In the next step, we can now recursively unpack the full path up to the parent $\mathtt{P}[u]$ of our current node $u$.
+Now, all that remains is to unpack the arc $(u, \mathtt{P}[u])$ if it is a shortcut.
+If so, the middle node $v$ is set in $\mathtt{P}$ as the node between $u$ and $\mathtt{P}[u]$ and \texttt{Unpack} is invoked recursively first for $v$ and then again for $u$ to unpack the arcs $(v, \mathtt{P}[v])$ and $uv$.
+
+\section{Evaluation}
+
+\section{Conclusion}
+
+% TODO future work TD
+
+% \section{Typesetting instructions -- Summary}
+% \label{sec:typesetting-summary}
+
+% LIPIcs is a series of open access high-quality conference proceedings across all fields in informatics established in cooperation with Schloss Dagstuhl.
+% In order to do justice to the high scientific quality of the conferences that publish their proceedings in the LIPIcs series, which is ensured by the thorough review process of the respective events, we believe that LIPIcs proceedings must have an attractive and consistent layout matching the standard of the series.
+% Moreover, the quality of the metadata, the typesetting and the layout must also meet the requirements of other external parties such as indexing service, DOI registry, funding agencies, among others. The guidelines contained in this document serve as the baseline for the authors, editors, and the publisher to create documents that meet as many different requirements as possible.
+
+% Please comply with the following instructions when preparing your article for a LIPIcs proceedings volume.
+% \paragraph*{Minimum requirements}
+
+% \begin{itemize}
+% \item Use pdflatex and an up-to-date \LaTeX{} system.
+% \item Use further \LaTeX{} packages and custom made macros carefully and only if required.
+% \item Use the provided sectioning macros: \verb+\section+, \verb+\subsection+, \verb+\subsubsection+, \linebreak \verb+\paragraph+, \verb+\paragraph*+, and \verb+\subparagraph*+.
+% \item Provide suitable graphics of at least 300dpi (preferably in PDF format).
+% \item Use BibTeX and keep the standard style (\verb+plainurl+) for the bibliography.
+% \item Please try to keep the warnings log as small as possible. Avoid overfull \verb+\hboxes+ and any kind of warnings/errors with the referenced BibTeX entries.
+% \item Use a spellchecker to correct typos.
+% \end{itemize}
+
+% \paragraph*{Mandatory metadata macros}
+% Please set the values of the metadata macros carefully since the information parsed from these macros will be passed to publication servers, catalogues and search engines.
+% Avoid placing macros inside the metadata macros. The following metadata macros/environments are mandatory:
+% \begin{itemize}
+% \item \verb+\title+ and, in case of long titles, \verb+\titlerunning+.
+% \item \verb+\author+, one for each author, even if two or more authors have the same affiliation.
+% \item \verb+\authorrunning+ and \verb+\Copyright+ (concatenated author names)\\
+% The \verb+\author+ macros and the \verb+\Copyright+ macro should contain full author names (especially with regard to the first name), while \verb+\authorrunning+ should contain abbreviated first names.
+% \item \verb+\ccsdesc+ (ACM classification, see \url{https://www.acm.org/publications/class-2012}).
+% \item \verb+\keywords+ (a comma-separated list of keywords).
+% \item \verb+\relatedversion+ (if there is a related version, typically the ``full version''); please make sure to provide a persistent URL, e.\,g., at arXiv.
+% \item \verb+\begin{abstract}...\end{abstract}+ .
+% \end{itemize}
+
+% \paragraph*{Please do not \ldots} %Do not override the \texttt{\seriesstyle}-defaults}
+% Generally speaking, please do not override the \texttt{lipics-v2021}-style defaults. To be more specific, a short checklist also used by Dagstuhl Publishing during the final typesetting is given below.
+% In case of \textbf{non-compliance} with these rules Dagstuhl Publishing will remove the corresponding parts of \LaTeX{} code and \textbf{replace it with the \texttt{lipics-v2021} defaults}. In serious cases, we may reject the LaTeX-source and expect the corresponding author to revise the relevant parts.
+% \begin{itemize}
+% \item Do not use a different main font. (For example, the \texttt{times} package is forbidden.)
+% \item Do not alter the spacing of the \texttt{lipics-v2021.cls} style file.
+% \item Do not use \verb+enumitem+ and \verb+paralist+. (The \texttt{enumerate} package is preloaded, so you can use
+%  \verb+\begin{enumerate}[(a)]+ or the like.)
+% \item Do not use ``self-made'' sectioning commands (e.\,g., \verb+\noindent{\bf My+ \verb+Paragraph}+).
+% \item Do not hide large text blocks using comments or \verb+\iffalse+ $\ldots$ \verb+\fi+ constructions.
+% \item Do not use conditional structures to include/exclude content. Instead, please provide only the content that should be published -- in one file -- and nothing else.
+% \item Do not wrap figures and tables with text. In particular, the package \texttt{wrapfig} is not supported.
+% \item Do not change the bibliography style. In particular, do not use author-year citations. (The
+% \texttt{natbib} package is not supported.)
+% \end{itemize}
+
+% \enlargethispage{\baselineskip}
+
+% This is only a summary containing the most relevant details. Please read the complete document ``LIPIcs: Instructions for Authors and the \texttt{lipics-v2021} Class'' for all details and don't hesitate to contact Dagstuhl Publishing (\url{mailto:publishing@dagstuhl.de}) in case of questions or comments:
+% \href{http://drops.dagstuhl.de/styles/lipics-v2021/lipics-v2021-authors/lipics-v2021-authors-guidelines.pdf}{\texttt{http://drops.dagstuhl.de/styles/lipics-v2021/\newline lipics-v2021-authors/lipics-v2021-authors-guidelines.pdf}}
+
+% \section{Lorem ipsum dolor sit amet}
+
+% Lorem ipsum dolor sit amet, consectetur adipiscing elit \cite{DBLP:journals/cacm/Knuth74}. Praesent convallis orci arcu, eu mollis dolor. Aliquam eleifend suscipit lacinia. Maecenas quam mi, porta ut lacinia sed, convallis ac dui. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse potenti. Donec eget odio et magna ullamcorper vehicula ut vitae libero. Maecenas lectus nulla, auctor nec varius ac, ultricies et turpis. Pellentesque id ante erat. In hac habitasse platea dictumst. Curabitur a scelerisque odio. Pellentesque elit risus, posuere quis elementum at, pellentesque ut diam. Quisque aliquam libero id mi imperdiet quis convallis turpis eleifend.
+
+% \begin{lemma}[Lorem ipsum]
+% \label{lemma:lorem}
+% Vestibulum sodales dolor et dui cursus iaculis. Nullam ullamcorper purus vel turpis lobortis eu tempus lorem semper. Proin facilisis gravida rutrum. Etiam sed sollicitudin lorem. Proin pellentesque risus at elit hendrerit pharetra. Integer at turpis varius libero rhoncus fermentum vitae vitae metus.
+% \end{lemma}
+
+% \begin{proof}
+% Cras purus lorem, pulvinar et fermentum sagittis, suscipit quis magna.
+
+
+% \proofsubparagraph*{Just some paragraph within the proof.}
+% Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer possim assum. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
+% \begin{claim}
+% content...
+% \end{claim}
+% \begin{claimproof}
+% content...
+%     \begin{enumerate}
+%         \item abc abc abc \claimqedhere{}
+%     \end{enumerate}
+% \end{claimproof}
+
+% \end{proof}
+
+% \begin{corollary}[Curabitur pulvinar, \cite{DBLP:books/mk/GrayR93}]
+% \label{lemma:curabitur}
+% Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer possim assum. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
+% \end{corollary}
+
+% \begin{proposition}\label{prop1}
+% This is a proposition
+% \end{proposition}
+
+% \autoref{prop1} and \cref{prop1} \ldots
+
+% \subsection{Curabitur dictum felis id sapien}
+
+% Curabitur dictum \cref{lemma:curabitur} felis id sapien \autoref{lemma:curabitur} mollis ut venenatis tortor feugiat. Curabitur sed velit diam. Integer aliquam, nunc ac egestas lacinia, nibh est vehicula nibh, ac auctor velit tellus non arcu. Vestibulum lacinia ipsum vitae nisi ultrices eget gravida turpis laoreet. Duis rutrum dapibus ornare. Nulla vehicula vulputate iaculis. Proin a consequat neque. Donec ut rutrum urna. Morbi scelerisque turpis sed elit sagittis eu scelerisque quam condimentum. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Aenean nec faucibus leo. Cras ut nisl odio, non tincidunt lorem. Integer purus ligula, venenatis et convallis lacinia, scelerisque at erat. Fusce risus libero, convallis at fermentum in, dignissim sed sem. Ut dapibus orci vitae nisl viverra nec adipiscing tortor condimentum \cite{DBLP:journals/cacm/Dijkstra68a}. Donec non suscipit lorem. Nam sit amet enim vitae nisl accumsan pretium.
+
+% \begin{lstlisting}[caption={Useless code.},label=list:8-6,captionpos=t,float,abovecaptionskip=-\medskipamount]
+% for i:=maxint to 0 do
+% begin
+%     j:=square(root(i));
+% end;
+% \end{lstlisting}
+
+% \subsection{Proin ac fermentum augue}
+
+% Proin ac fermentum augue. Nullam bibendum enim sollicitudin tellus egestas lacinia euismod orci mollis. Nulla facilisi. Vivamus volutpat venenatis sapien, vitae feugiat arcu fringilla ac. Mauris sapien tortor, sagittis eget auctor at, vulputate pharetra magna. Sed congue, dui nec vulputate convallis, sem nunc adipiscing dui, vel venenatis mauris sem in dui. Praesent a pretium quam. Mauris non mauris sit amet eros rutrum aliquam id ut sapien. Nulla aliquet fringilla sagittis. Pellentesque eu metus posuere nunc tincidunt dignissim in tempor dolor. Nulla cursus aliquet enim. Cras sapien risus, accumsan eu cursus ut, commodo vel velit. Praesent aliquet consectetur ligula, vitae iaculis ligula interdum vel. Integer faucibus faucibus felis.
+
+% \begin{itemize}
+% \item Ut vitae diam augue.
+% \item Integer lacus ante, pellentesque sed sollicitudin et, pulvinar adipiscing sem.
+% \item Maecenas facilisis, leo quis tincidunt egestas, magna ipsum condimentum orci, vitae facilisis nibh turpis et elit.
+% \end{itemize}
+
+% \begin{remark}
+% content...
+% \end{remark}
+
+% \section{Pellentesque quis tortor}
+
+% Nec urna malesuada sollicitudin. Nulla facilisi. Vivamus aliquam tempus ligula eget ornare. Praesent eget magna ut turpis mattis cursus. Aliquam vel condimentum orci. Nunc congue, libero in gravida convallis \cite{DBLP:conf/focs/HopcroftPV75}, orci nibh sodales quam, id egestas felis mi nec nisi. Suspendisse tincidunt, est ac vestibulum posuere, justo odio bibendum urna, rutrum bibendum dolor sem nec tellus.
+
+% \begin{lemma} [Quisque blandit tempus nunc]
+% Sed interdum nisl pretium non. Mauris sodales consequat risus vel consectetur. Aliquam erat volutpat. Nunc sed sapien ligula. Proin faucibus sapien luctus nisl feugiat convallis faucibus elit cursus. Nunc vestibulum nunc ac massa pretium pharetra. Nulla facilisis turpis id augue venenatis blandit. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
+% \end{lemma}
+
+% Fusce eu leo nisi. Cras eget orci neque, eleifend dapibus felis. Duis et leo dui. Nam vulputate, velit et laoreet porttitor, quam arcu facilisis dui, sed malesuada risus massa sit amet neque.
+
+% \section{Morbi eros magna}
+
+% Morbi eros magna, vestibulum non posuere non, porta eu quam. Maecenas vitae orci risus, eget imperdiet mauris. Donec massa mauris, pellentesque vel lobortis eu, molestie ac turpis. Sed condimentum convallis dolor, a dignissim est ultrices eu. Donec consectetur volutpat eros, et ornare dui ultricies id. Vivamus eu augue eget dolor euismod ultrices et sit amet nisi. Vivamus malesuada leo ac leo ullamcorper tempor. Donec justo mi, tempor vitae aliquet non, faucibus eu lacus. Donec dictum gravida neque, non porta turpis imperdiet eget. Curabitur quis euismod ligula.
+
+
+%%
+%% Bibliography
+%%
+
+%% Please use bibtex,
+
+\bibliography{references}
+
+% \appendix
+
+% \section{Styles of lists, enumerations, and descriptions}\label{sec:itemStyles}
+
+% List of different predefined enumeration styles:
+
+% \begin{itemize}
+% \item \verb|\begin{itemize}...\end{itemize}|
+% \item \dots
+% \item \dots
+% %\item \dots
+% \end{itemize}
+
+% \begin{enumerate}
+% \item \verb|\begin{enumerate}...\end{enumerate}|
+% \item \dots
+% \item \dots
+% %\item \dots
+% \end{enumerate}
+
+% \begin{alphaenumerate}
+% \item \verb|\begin{alphaenumerate}...\end{alphaenumerate}|
+% \item \dots
+% \item \dots
+% %\item \dots
+% \end{alphaenumerate}
+
+% \begin{romanenumerate}
+% \item \verb|\begin{romanenumerate}...\end{romanenumerate}|
+% \item \dots
+% \item \dots
+% %\item \dots
+% \end{romanenumerate}
+
+% \begin{bracketenumerate}
+% \item \verb|\begin{bracketenumerate}...\end{bracketenumerate}|
+% \item \dots
+% \item \dots
+% %\item \dots
+% \end{bracketenumerate}
+
+% \begin{description}
+% \item[Description 1] \verb|\begin{description} \item[Description 1]  ...\end{description}|
+% \item[Description 2] Fusce eu leo nisi. Cras eget orci neque, eleifend dapibus felis. Duis et leo dui. Nam vulputate, velit et laoreet porttitor, quam arcu facilisis dui, sed malesuada risus massa sit amet neque.
+% \item[Description 3]  \dots
+% %\item \dots
+% \end{description}
+
+% \cref{testenv-proposition} and \autoref{testenv-proposition} ...
+
+% \section{Theorem-like environments}\label{sec:theorem-environments}
+
+% List of different predefined enumeration styles:
+
+% \begin{theorem}\label{testenv-theorem}
+% Fusce eu leo nisi. Cras eget orci neque, eleifend dapibus felis. Duis et leo dui. Nam vulputate, velit et laoreet porttitor, quam arcu facilisis dui, sed malesuada risus massa sit amet neque.
+% \end{theorem}
+
+% \begin{lemma}\label{testenv-lemma}
+% Fusce eu leo nisi. Cras eget orci neque, eleifend dapibus felis. Duis et leo dui. Nam vulputate, velit et laoreet porttitor, quam arcu facilisis dui, sed malesuada risus massa sit amet neque.
+% \end{lemma}
+
+% \begin{corollary}\label{testenv-corollary}
+% Fusce eu leo nisi. Cras eget orci neque, eleifend dapibus felis. Duis et leo dui. Nam vulputate, velit et laoreet porttitor, quam arcu facilisis dui, sed malesuada risus massa sit amet neque.
+% \end{corollary}
+
+% \begin{proposition}\label{testenv-proposition}
+% Fusce eu leo nisi. Cras eget orci neque, eleifend dapibus felis. Duis et leo dui. Nam vulputate, velit et laoreet porttitor, quam arcu facilisis dui, sed malesuada risus massa sit amet neque.
+% \end{proposition}
+
+% \begin{conjecture}\label{testenv-conjecture}
+% Fusce eu leo nisi. Cras eget orci neque, eleifend dapibus felis. Duis et leo dui. Nam vulputate, velit et laoreet porttitor, quam arcu facilisis dui, sed malesuada risus massa sit amet neque.
+% \end{conjecture}
+
+% \begin{observation}\label{testenv-observation}
+% Fusce eu leo nisi. Cras eget orci neque, eleifend dapibus felis. Duis et leo dui. Nam vulputate, velit et laoreet porttitor, quam arcu facilisis dui, sed malesuada risus massa sit amet neque.
+% \end{observation}
+
+% \begin{exercise}\label{testenv-exercise}
+% Fusce eu leo nisi. Cras eget orci neque, eleifend dapibus felis. Duis et leo dui. Nam vulputate, velit et laoreet porttitor, quam arcu facilisis dui, sed malesuada risus massa sit amet neque.
+% \end{exercise}
+
+% \begin{definition}\label{testenv-definition}
+% Fusce eu leo nisi. Cras eget orci neque, eleifend dapibus felis. Duis et leo dui. Nam vulputate, velit et laoreet porttitor, quam arcu facilisis dui, sed malesuada risus massa sit amet neque.
+% \end{definition}
+
+% \begin{example}\label{testenv-example}
+% Fusce eu leo nisi. Cras eget orci neque, eleifend dapibus felis. Duis et leo dui. Nam vulputate, velit et laoreet porttitor, quam arcu facilisis dui, sed malesuada risus massa sit amet neque.
+% \end{example}
+
+% \begin{note}\label{testenv-note}
+% Fusce eu leo nisi. Cras eget orci neque, eleifend dapibus felis. Duis et leo dui. Nam vulputate, velit et laoreet porttitor, quam arcu facilisis dui, sed malesuada risus massa sit amet neque.
+% \end{note}
+
+% \begin{note*}
+% Fusce eu leo nisi. Cras eget orci neque, eleifend dapibus felis. Duis et leo dui. Nam vulputate, velit et laoreet porttitor, quam arcu facilisis dui, sed malesuada risus massa sit amet neque.
+% \end{note*}
+
+% \begin{remark}\label{testenv-remark}
+% Fusce eu leo nisi. Cras eget orci neque, eleifend dapibus felis. Duis et leo dui. Nam vulputate, velit et laoreet porttitor, quam arcu facilisis dui, sed malesuada risus massa sit amet neque.
+% \end{remark}
+
+% \begin{remark*}
+% Fusce eu leo nisi. Cras eget orci neque, eleifend dapibus felis. Duis et leo dui. Nam vulputate, velit et laoreet porttitor, quam arcu facilisis dui, sed malesuada risus massa sit amet neque.
+% \end{remark*}
+
+% \begin{claim}\label{testenv-claim}
+% Fusce eu leo nisi. Cras eget orci neque, eleifend dapibus felis. Duis et leo dui. Nam vulputate, velit et laoreet porttitor, quam arcu facilisis dui, sed malesuada risus massa sit amet neque.
+% \end{claim}
+
+% \begin{claim*}\label{testenv-claim2}
+% Fusce eu leo nisi. Cras eget orci neque, eleifend dapibus felis. Duis et leo dui. Nam vulputate, velit et laoreet porttitor, quam arcu facilisis dui, sed malesuada risus massa sit amet neque.
+% \end{claim*}
+
+% \begin{proof}
+% Fusce eu leo nisi. Cras eget orci neque, eleifend dapibus felis. Duis et leo dui. Nam vulputate, velit et laoreet porttitor, quam arcu facilisis dui, sed malesuada risus massa sit amet neque.
+% \end{proof}
+
+% \begin{claimproof}
+% Fusce eu leo nisi. Cras eget orci neque, eleifend dapibus felis. Duis et leo dui. Nam vulputate, velit et laoreet porttitor, quam arcu facilisis dui, sed malesuada risus massa sit amet neque.
+% \end{claimproof}
+
+\end{document}
