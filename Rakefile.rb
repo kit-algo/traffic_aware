@@ -24,12 +24,12 @@ osm_ger_src = 'https://download.geofabrik.de/europe/germany-200101.osm.pbf'
 osm_ger_src_file = "#{data_dir}/germany-200101.osm.pbf"
 osm_eur_src = 'http://i11www.iti.kit.edu/extra/free_roadgraphs/osm-eur.zip'
 osm_eur_src_file = "#{data_dir}/osm-eur.zip"
-osm_eur_gr = "#{data_dir}/osm-eur.gr"
-osm_eur_co = "#{data_dir}/osm-eur.co"
 
 osm_ger = "#{data_dir}/osm_ger/"
-osm_eur = "#{data_dir}/osm_eur14/"
 dimacs_eur = "#{data_dir}/europe/"
+osm_eur = "#{data_dir}/osm_eur14/"
+osm_eur_gr = "#{osm_eur}/osm-eur.gr"
+osm_eur_co = "#{osm_eur}/osm-eur.co"
 
 fake = 'fake_traffic'
 lite = 'lite_traffic'
@@ -88,8 +88,8 @@ namespace "prep" do
       sh "#{wd}/code/RoutingKit/bin/convert_road_dimacs_coordinates #{osm_eur_co} latitude longitude"
     end
     Dir.chdir "code/rust_road_router" do
-      sh "cargo run --release --bin generate_geo_distances -- #{osm_eur}"
       sh "cargo run --release --bin write_unit_files -- #{osm_eur} 10 1"
+      sh "cargo run --release --bin generate_geo_distances -- #{osm_eur}"
     end
   end
 
