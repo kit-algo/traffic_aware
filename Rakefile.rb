@@ -68,12 +68,12 @@ namespace "prep" do
     end
   end
 
-  file "#{osm_ger}/#{lite}" => osm_ger do
+  file "#{osm_ger}#{lite}" => osm_ger do
     Dir.chdir "code/rust_road_router" do
       sh "cargo run --release --bin import_mapbox_live -- #{osm_ger} #{lite_live_dir} #{lite}"
     end
   end
-  file "#{osm_ger}/#{heavy}" => osm_ger do
+  file "#{osm_ger}#{heavy}" => osm_ger do
     Dir.chdir "code/rust_road_router" do
       sh "cargo run --release --bin import_mapbox_live -- #{osm_ger} #{heavy_live_dir} #{heavy}"
     end
@@ -106,7 +106,7 @@ namespace "prep" do
         sh "mkdir -p #{graph}/queries/4h"
         sh "mkdir -p #{graph}/queries/rank"
         sh "mkdir -p #{graph}/queries/uniform"
-        sh "cargo run --release --bin generate_queries -- #{graph}"
+        sh "cargo run --release --bin generate_queries -- #{graph} 1000"
       end
     end
 
@@ -120,7 +120,7 @@ end
 
 namespace "exp" do
   desc "Run all experiments"
-  task all: [:preprocessing, :epsilon, :data]
+  task all: [:preprocessing, :epsilon, :data, :ubs_perf]
 
   directory "#{exp_dir}/preprocessing"
   directory "#{exp_dir}/epsilon"
@@ -152,11 +152,17 @@ namespace "exp" do
     Dir.chdir "code/rust_road_router" do
       graphs.each do |graph, metrics|
         metrics.each do |metric|
-          sh "cargo run --release --bin cchpot_traffic_aware -- #{graph} 0.5 #{metric} queries/1h > #{exp_dir}/epsilon/$(date --iso-8601=seconds).json"
-          sh "cargo run --release --bin cchpot_traffic_aware -- #{graph} 0.5 #{metric} queries/4h > #{exp_dir}/epsilon/$(date --iso-8601=seconds).json"
-          sh "cargo run --release --bin cchpot_traffic_aware -- #{graph} 0.5 #{metric} queries/uniform > #{exp_dir}/epsilon/$(date --iso-8601=seconds).json"
+          sh "cargo run --release --bin cchpot_traffic_aware -- #{graph} 0.5 #{metric} queries/1h > #{exp_dir}/data/$(date --iso-8601=seconds).json"
+          sh "cargo run --release --bin cchpot_traffic_aware -- #{graph} 0.5 #{metric} queries/4h > #{exp_dir}/data/$(date --iso-8601=seconds).json"
+          sh "cargo run --release --bin cchpot_traffic_aware -- #{graph} 0.5 #{metric} queries/uniform > #{exp_dir}/data/$(date --iso-8601=seconds).json"
         end
       end
+    end
+  end
+
+  task ubs_perf: ["#{exp_dir}/ubs_perf", osm_eur + "cch_perm", osm_eur + "queries", osm_eur + fake] do
+    Dir.chdir "code/rust_road_router" do
+      sh "cargo run --release --bin ubs_performance -- #{osm_eur} 0.5 #{fake} > #{exp_dir}/ubs_perf/$(date --iso-8601=seconds).json"
     end
   end
 end
