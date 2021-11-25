@@ -7,20 +7,11 @@ import glob
 import os
 import re
 
+from shared import *
+
 base = "exp/"
 paths = glob.glob(base + "preprocessing/*.json")
 data = [json.load(open(path)) for path in paths]
-
-def path_to_graph(path):
-    return {
-        'ger06': 'TDGer06',
-        'ptv17': 'TDEur17',
-        'ptv20': 'TDEur20',
-        'osm_eur14': 'OSM Europe',
-        'osm_ger': 'OSM Germany',
-        'osm_ger_td': 'OSM Germany',
-        'europe': 'DIMACS Europe',
-    }[[x for x in path.split('/') if x != ''][-1]]
 
 graphs = pd.DataFrame.from_records([{
     **run,
@@ -50,7 +41,7 @@ cch_ordering = pd.DataFrame.from_records([parse_flowcutter_partition_output(path
 table = graphs.groupby(['graph'])[['basic_customization_running_time_ms', 'contraction_running_time_ms', 'graph_build_running_time_ms',
     'perfect_customization_running_time_ms', 'respecting_running_time_ms', 'num_nodes', 'num_edges']].mean()
 
-table = table.reindex(['DIMACS Europe', 'OSM Europe', 'OSM Germany'])
+table = table.reindex(graph_selection)
 
 table = table.join(cch_ordering.groupby('graph').mean())
 table['num_nodes'] = table['num_nodes'] / 1000000.0
@@ -67,8 +58,7 @@ lines = lines[:2] + [
   R" & $[\cdot 10^6]$ & $[\cdot 10^6]$ &                   & Phase 1 & Phase 2 \\"
 ] + lines[4:]
 
-output = "\n".join(lines) + "\n"
-output = re.sub(re.compile('([0-9]{3}(?=[0-9]))'), '\\g<0>,\\\\', output[::-1])[::-1]
+output = add_latex_big_number_spaces("\n".join(lines) + "\n")
 
 with open("paper/table/graphs.tex", 'w') as f:
   f.write(output)
