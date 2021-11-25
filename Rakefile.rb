@@ -18,6 +18,13 @@ end
 
 namespace "table" do
   directory "paper/table"
+
+  file "paper/table/graphs.tex" => FileList[
+    "#{exp_dir}/preprocessing/*.out",
+    "#{exp_dir}/preprocessing/*.json",
+  ] + ["eval/graphs.py", "paper/table"] do
+    sh "eval/graphs.py"
+  end
 end
 
 osm_ger_src = 'https://download.geofabrik.de/europe/germany-200101.osm.pbf'
