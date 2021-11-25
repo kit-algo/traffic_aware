@@ -100,6 +100,10 @@ namespace "prep" do
       end
     end
 
+    file graph + 'lower_bound' => graph do
+      sh "ln -s #{graph}travel_time #{graph}lower_bound"
+    end
+
     file graph + "queries" => graph do
       Dir.chdir "code/rust_road_router" do
         sh "mkdir -p #{graph}/queries/1h"
@@ -125,8 +129,12 @@ namespace "exp" do
   directory "#{exp_dir}/preprocessing"
   directory "#{exp_dir}/epsilon"
   directory "#{exp_dir}/data"
+  directory "#{exp_dir}/ubs_perf"
 
-  task preprocessing: ["#{exp_dir}/preprocessing", "code/rust_road_router/lib/InertialFlowCutter/build/console"] do
+  task preprocessing: ["#{exp_dir}/preprocessing", "code/rust_road_router/lib/InertialFlowCutter/build/console"] +
+                       graphs.map { |g, _| g + 'cch_perm' } +
+                       graphs.map { |g, _| g + 'lower_bound' } +
+                       graphs.flat_map { |g, metrics| metrics.map { |m| g + m } } do
     graphs.each do |graph, _|
       10.times do
         Dir.chdir "code/rust_road_router" do
