@@ -160,9 +160,9 @@ namespace "exp" do
     Dir.chdir "code/rust_road_router" do
       graphs.each do |graph, metrics|
         metrics.each do |metric|
-          sh "cargo run --release --bin cchpot_traffic_aware -- #{graph} 0.5 #{metric} queries/1h > #{exp_dir}/data/$(date --iso-8601=seconds).json"
-          sh "cargo run --release --bin cchpot_traffic_aware -- #{graph} 0.5 #{metric} queries/4h > #{exp_dir}/data/$(date --iso-8601=seconds).json"
-          sh "cargo run --release --bin cchpot_traffic_aware -- #{graph} 0.5 #{metric} queries/uniform > #{exp_dir}/data/$(date --iso-8601=seconds).json"
+          sh "cargo run --release --bin cchpot_traffic_aware -- #{graph} 0.2 #{metric} queries/1h > #{exp_dir}/data/$(date --iso-8601=seconds).json"
+          sh "cargo run --release --bin cchpot_traffic_aware -- #{graph} 0.2 #{metric} queries/4h > #{exp_dir}/data/$(date --iso-8601=seconds).json"
+          sh "cargo run --release --bin cchpot_traffic_aware -- #{graph} 0.2 #{metric} queries/uniform > #{exp_dir}/data/$(date --iso-8601=seconds).json"
         end
       end
     end
@@ -170,7 +170,7 @@ namespace "exp" do
 
   task ubs_perf: ["#{exp_dir}/ubs_perf", osm_eur + "cch_perm", osm_eur + "queries", osm_eur + fake] do
     Dir.chdir "code/rust_road_router" do
-      sh "cargo run --release --bin ubs_performance -- #{osm_eur} 0.5 #{fake} > #{exp_dir}/ubs_perf/$(date --iso-8601=seconds).json"
+      sh "cargo run --release --bin ubs_performance -- #{osm_eur} 0.2 #{fake} > #{exp_dir}/ubs_perf/$(date --iso-8601=seconds).json"
     end
   end
 end
