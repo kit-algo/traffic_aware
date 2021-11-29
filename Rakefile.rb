@@ -4,8 +4,10 @@ data_dir = Dir.pwd + '/data'
 only_public = !ENV['ONLY_PUBLIC'].nil?
 
 file "paper/traffic.pdf" => [
-  "paper/traffic.tex"] do
-
+  "paper/traffic.tex",
+  "paper/table/epsilon.tex",
+  "paper/table/graphs.tex",
+] do
   Dir.chdir "paper" do
     sh "latexmk -pdf traffic.tex"
   end
@@ -24,6 +26,12 @@ namespace "table" do
     "#{exp_dir}/preprocessing/*.json",
   ] + ["eval/graphs.py", "paper/table"] do
     sh "eval/graphs.py"
+  end
+
+  file "paper/table/epsilon.tex" => FileList[
+    "#{exp_dir}/epsilon/*.json",
+  ] + ["eval/epsilon.py", "paper/table"] do
+    sh "eval/epsilon.py"
   end
 end
 
