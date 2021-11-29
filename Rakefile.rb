@@ -108,7 +108,7 @@ namespace "prep" do
     end
 
     file graph + 'lower_bound' => graph do
-      sh "ln -s #{graph}travel_time #{graph}lower_bound"
+      sh "ln -s #{graph}travel_time #{graph}lower_bound" unless File.exist? "#{graph}lower_bound"
     end
 
     file graph + "queries" => graph do
