@@ -16,6 +16,13 @@ end
 task default: "paper/traffic.pdf"
 
 namespace "fig" do
+  directory "paper/fig"
+
+  file "paper/fig/ubs_perf.pdf" => FileList[
+    "#{exp_dir}/ubs_perf/*.json",
+  ] + ["eval/ubs_perf.py", "paper/fig"] do
+    sh "eval/ubs_perf.py"
+  end
 end
 
 namespace "table" do

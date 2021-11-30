@@ -55,7 +55,7 @@ lines = table.to_latex(escape=False).split("\n")
 
 lines = lines[:2] + [
   R" & Nodes          & Edges          & \multicolumn{2}{c}{Preprocessing [s]} \\ \cmidrule(lr){4-5}"
-  R" & $[\cdot 10^6]$ & $[\cdot 10^6]$ &                   & Phase 1 & Phase 2 \\"
+  R" & $[\cdot 10^6]$ & $[\cdot 10^6]$ & Phase 1 & Phase 2 \\"
 ] + lines[4:]
 
 output = add_latex_big_number_spaces("\n".join(lines) + "\n")
