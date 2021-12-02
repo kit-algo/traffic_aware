@@ -40,6 +40,12 @@ namespace "table" do
   ] + ["eval/epsilon.py", "paper/table"] do
     sh "eval/epsilon.py"
   end
+
+  file "paper/table/data.tex" => FileList[
+    "#{exp_dir}/data/*.json",
+  ] + ["eval/data.py", "paper/table"] do
+    sh "eval/data.py"
+  end
 end
 
 osm_ger_src = 'https://download.geofabrik.de/europe/germany-200101.osm.pbf'
@@ -154,7 +160,6 @@ namespace "exp" do
   directory "#{exp_dir}/ubs_perf"
 
   task preprocessing: ["#{exp_dir}/preprocessing", "code/rust_road_router/lib/InertialFlowCutter/build/console"] +
-                       graphs.map { |g, _| g + 'cch_perm' } +
                        graphs.map { |g, _| g + 'lower_bound' } +
                        graphs.flat_map { |g, metrics| metrics.map { |m| g + m } } do
     graphs.each do |graph, _|
