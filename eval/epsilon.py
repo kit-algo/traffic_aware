@@ -19,9 +19,8 @@ queries = pd.DataFrame.from_records([{
     'graph': path_to_graph(run['args'][1]),
 } for run in data for algo in run['algo_runs']])
 
-table = queries.query("~failed").groupby(['epsilon', 'algo']) \
-    .mean()[['length_increase_percent', 'num_iterations', 'num_forbidden_paths', 'total_exploration_time_ms', 'total_ubs_time_ms', 'running_time_ms']] \
-    .join(queries.groupby(['epsilon', 'algo']).mean()[['failed']])
+table = queries.groupby(['epsilon', 'algo']) \
+    .mean()[['length_increase_percent', 'num_iterations', 'num_forbidden_paths', 'total_exploration_time_ms', 'total_ubs_time_ms', 'running_time_ms', 'failed']]
 
 table['failed'] *= 100
 cols1 = ['total_exploration_time_ms', 'total_ubs_time_ms', 'running_time_ms', 'num_forbidden_paths']
@@ -33,7 +32,7 @@ table = table.rename(index={ 'iterative_detour_blocking': 'IDB', 'iterative_path
 lines = table.rename(index=lambda x: R"\multirow{2}{*}{" + "{:.2f}".format(x) +R"}", level=0).to_latex(escape=False, column_format='ccrrrrrrr').split("\n")
 lines = lines[:2] + [
   R"            & & Increase & Iterations & Blocked & \multicolumn{3}{c}{Running time [ms]} & Failed \\ \cmidrule(lr){6-8}",
-  R" $\epsilon$ & &   $[\%]$ &            &   Paths & A* & UBS & Total                      & $[\%]$ \\"
+  R" $\epsilon$ & &   $[\%]$ &            &   paths & A* & UBS & Total                      & $[\%]$ \\"
 ] + lines[4:]
 for l in range(6, 16, 2):
     lines[l] += '[2pt]'
