@@ -19,9 +19,9 @@
 
 \bibliographystyle{plainurl}% the mandatory bibstyle
 
-\title{Dummy title} %TODO Please add
+\title{Fast Computation of Shortest Smooth Paths and Uniformly Bounded Stretch with Lazy RPHAST} %TODO Please add
 
-%\titlerunning{Dummy short title} %TODO optional, please use if title is longer than one line
+\titlerunning{Fast Computation of Shortest Smooth Paths and UBS with Lazy RPHAST} %TODO optional, please use if title is longer than one line
 
 \author{Jane {Open Access}}{Dummy University Computing Laboratory, [optional: Address], Country \and My second affiliation, Country \and \url{http://www.myhomepage.edu} }{johnqpublic@dummyuni.org}{https://orcid.org/0000-0002-1825-0097}{(Optional) author-specific funding acknowledgements}%TODO mandatory, please use full name; only 1 author per \author macro; first two parameters are mandatory, other parameters can be empty. Please provide at least the name of the affiliation and the country. The full address is optional. Use additional curly braces to indicate the correct name splitting when the last name consists of multiple name parts.
 
@@ -76,6 +76,7 @@
 \tikzstyle{snode}=[circle,minimum size=2mm,fill = black]
 
 \usepackage[algo2e,vlined]{algorithm2e}
+\usepackage{booktabs}
 
 \begin{document}
 
@@ -389,7 +390,7 @@ Finally, we utilize A* with CCH-Potentials to guide the search towards the targe
 As our experiments show, disallowing non $\epsilon$-smooth path increase distances only very little.
 Thus, the heuristic is close to perfect and A* very effective for this problem.
 
-\subsection{Efficient UBS Computation}
+\subsection{Efficient UBS Computation}\label{sec:ubs_tree}
 
 \begin{figure}
 \centering
@@ -537,9 +538,134 @@ If so, the middle node $v$ is set in $\mathtt{P}$ as the node between $u$ and $\
 
 \section{Evaluation}
 
+In this section, we present our experimental results.
+Our benchmark machine runs openSUSE Leap 15.3 (kernel 5.3.18), and has 192\,GiB of DDR4-2666 RAM and two Intel Xeon Gold 6144 CPUs, each of which has eight cores clocked at 3.5\,GHz and 8~$\times$~64\,KiB of L1, 8~$\times$~1\,MiB of L2, and 24.75\,MiB of shared L3 cache.
+All running times are sequential.
+We implement our algorithms in Rust\footnote{The code for this paper and all experiments is available at \url{https://github.com/kit-algo/traffic-aware}} and compile them with \texttt{rustc 1.58.0-nightly (b426445c6 2021-11-24)} in the release profile with the \texttt{target-cpu=native} option.
+
+\begin{table}
+\centering
+\caption{
+Instances used in the evaluation with sequential preprocessing running times to construct a CCH-Potential.
+Phase 1 needs to be run only once for each graph, Phase 2 once for each metric, or when a metric changes.
+}\label{tab:graphs}
+\input{table/graphs.tex}
+\end{table}
+
+Table~\ref{tab:graphs} shows the road networks we use in our experiments alongside sequential preprocessing times.
+OSM Europe is the same network used in~\cite{dss-tarrn-18} and publicly available\footnote{\url{https://i11www.iti.kit.edu/resources/roadgraphs.php}}.
+The DIMACs Europe instance was made available by PTV\footnote{\url{https://ptvgroup.com}} for the 9th DIMACS implementation challenge~\cite{DemetrescuGJ09}.
+It is not publicly available but can be obtained on request for research purposes\footnote{\url{https://i11www.iti.kit.edu/resources/roadgraphs.php}}.
+We derived the OSM Germany instance from an early 2020 snapshot of OpenStreetMap and converted into a routing graph using RoutingKit\footnote{\url{https://github.com/RoutingKit/RoutingKit}}.
+For this instance, we have proprietary traffic data provided by Mapbox\footnote{\url{https://mapbox.com}} which we unfortunately cannot provide.
+The data includes a two live traffic snapshots in the form of OSM node pairs and live speeds for the edge between the nodes.
+One is from Friday 2019/08/02 afternoon and contains 320K node pairs and the other from Tuesday 2019/07/16 morning and contains 185K pairs.
+For the Europe instances, we do not have any real world traffic data.
+Thus, we resort to the approach suggested in~\cite{dss-tarrn-18} and generate synthetic live traffic:
+For each road where the average speed is greater than 30\,kph, we reduce the speed to 5\,kph with a probability of 0.5\%.
+
+We evaluate our algorithms by performing batches of point-to-point shortest $\epsilon$-smooth path queries.
+As the distance between source and target has a significant influence on the performance, we generate different query batches.
+For each batch, we pick 1000 source nodes uniformly at random.
+We then run Dijkstra's algorithm from each source node on the graph with the smooth metric.
+Following the Dijkstra rank methodology, we store every $2^i$th settled node~\cite{ss-hhhes-05}.
+This allows evaluating the performance development against varying path lengths.
+In~\cite{adgw-arrn-13}, 1-hour queries were performed.
+For comparison, we also generate an \emph{1h} batch by picking the first settled node with a distance greater than one hour.
+In addition we generate a \emph{4h} batch for medium-range queries with the same method and a \emph{random} batch for long range queries where the target is picked uniformly at random.
+
+Preliminary experiments showed that some queries take prohibitively long to answer exactly.
+Since we are solving an $\mathcal{NP}$-hard problem to exactness, this is not surprising.
+We abort queries if the algorithm after 250 iterations does not have found a path with $\ubs < (1+\epsilon)$.
+We report these queries as failed but nevertheless do include their running times in our measurements.
+
+\begin{figure}
+\centering
+\includegraphics[width=\linewidth]{fig/ubs_perf.pdf}
+\caption{
+Running times of different UBS checking algorithms for paths encountered by IDB when answering queries of different ranks with $\epsilon = 0.2$.
+The boxes cover the range between the first and third quartile.
+The band in the box indicates the median, the whiskers cover 1.5 times the interquartile range.
+All other running times are indicated as outliers.
+}\label{fig:ubs_perf}
+\end{figure}
+
+We start by evaluating different UBS algorithms in isolation.
+The paths checked by the UBS algorithms are the paths we find while performing IDB to find shortest smooth paths with $\epsilon = 0.2$ on the Dijkstra rank queries.
+We limit the time per rank and UBS algorithm to one hour.
+Thus, slow algorithms may not get to check all paths.
+Our baseline is computing all distances between pairs of path nodes at once with \emph{SSE RPHAST}~\cite{dgw-fbspr-11}, which to the best of our knowledge is the fastest known many-to-many algorithm.
+The second algorithm, denoted as~\emph{Lazy RPHAST Naive} uses Lazy RPHAST to compute distances between all pairs of path nodes.
+Third is \emph{UBS Trees Dijkstra} which is the non-accelerated, i.e. Dijkstra-based, implementation of the efficient UBS computation introduced in Section~\ref{sec:ubs_tree}.
+\emph{UBS Trees Lazy RPHAST} denotes the accelerated variant of this algorithm utilizing Lazy RPHAST as described in Section~\ref{sec:lazy_rphast_path}.
+
+Figure~\ref{fig:ubs_perf} depicts the results of our experiment.
+We observe that SSE RPHAST is consequently faster than the naive Lazy RPHAST variant by a roughly constant factor.
+SSE RPHAST was designed as a many-to-many algorithm and is thus more efficient than naively applying a many-to-one algorithm $|P|$ times.
+The non-accelerated UBS Trees algorithm is very fast for short paths but quickly becomes prohibitively slow for longer paths.
+Running Dijkstra's algorithm will traverse a large part of the network if source and target are sufficiently far apart from each other.
+Doing this multiple times is of course not feasible.
+However, the accelerated variant beats SSE RPHAST by about two orders of magnitude across all path lengths.
+UBS Trees running times have significantly greater variance than the many-to-many algorithms.
+The reason for this is that the amount of work which UBS Trees can avoid by chopping of shortest path segments varies strongly between different paths.
+In contrast, the many-to-many based algorithms will always check $\mathcal{O}(|P|^2)$ subpath distances.
+Note that the UBS Trees Dijkstra outliers disappear because we limit the time per rank and algorithm.
+If we would check all paths, the outliers would be present too, but the experiment would take prohibitively long.
+
+\begin{table}
+\centering
+\caption{
+Average performance of our implementations of IDB and IPB for different values of $\epsilon$ with 1h queries on OSM Europe with synthetic live traffic.
+The Increase column denotes the length increase with respect to $w^*$ of the shortest smooth path over the shortest $w^*$ path.
+It includes only values from successful queries.
+All other columns indicate average values over all queries, including the ones terminated after 250 iterations.
+}\label{tab:epsilon}
+\input{table/epsilon.tex}
+\end{table}
+
+Next, we evaluate the performance of iterative path blocking and iterative detour blocking for different choices of epsilon.
+This experiment was also performed in~\cite{dss-tarrn-18}.
+We replicate the setup to the best of our abilities to allow for comparison of the different IDB implementations.
+We observe similar trends as Delling et al.
+The smaller $\epsilon$, the harder the problem becomes.
+Consequently, the length increase, the number of iterations, the number of blocked paths and the running time increase.
+However, for our implementation of IDB, we measure slightly bigger path increases and slightly more iterations.
+% less? blocked paths for small epsilons, more? for larger epsilons
+Our implementation of IDB achieves running times two to three orders of magnitude faster than the baseline in~\cite{dss-tarrn-18}.
+One reason for this is our new UBS algorithm which only needs a couple of milliseconds across all values of $\epsilon$.
+In~\cite{dss-tarrn-18}, the UBS checking phase takes between 1.3 and 1.9 \emph{seconds}.
+The CH-Potentials based shortest path finding phase is also very efficient across the entire range of $\epsilon$ values.
+Even with many blocked paths, the path lengths increase only little and the CH-Potentials heuristic remains very tight and yields good speed-ups.
+% CRP not as effective with many blocked paths?
+
+In comparison to IDB, IPB needs more iterations and blocks significantly more paths.
+% goes in hand with more failed queries
+Conversely, it also finds shorter paths.
+The qualitative differences between IDB and IPB become more pronounced the smaller $\epsilon$ becomes.
+Interestingly, IDB is only faster than IPB for $\epsilon \geq 0.1$.
+The reason for this is that the running time of the A* search depends on the length increase and the running time of the UBS Trees algorithm on the smoothness of the path.
+Since IPB finds better paths in both regards, both phases run faster and the total running time is faster for small $\epsilon$ despite the larger number of iterations.
+
+With IDB, less than 1\% of all queries were aborted after 250 iterations.
+For $\epsilon \geq 0.05$ the running times are also fast enough for interactive responses which makes the algorithm suitable for practical applications.
+Solving the problem exactly with IPB blocking is harder and leads to more aborted queries.
+However, for sufficiently large $\epsilon$, only few queries fail and total running times are also fast enough for interactive applications.
+
+% failure reasons
+
+\begin{table}
+\centering
+\caption{
+TODO
+}\label{tab:data}
+\input{table/data.tex}
+\end{table}
+
 \section{Conclusion}
 
 % TODO future work TD
+% path repairing heuristic
+% work around performance problems (circles, expontial number of forb paths - forbid corridors)
 
 % \section{Typesetting instructions -- Summary}
 % \label{sec:typesetting-summary}
