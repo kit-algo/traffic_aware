@@ -178,7 +178,7 @@ namespace "exp" do
   task epsilon: ["#{exp_dir}/epsilon", osm_eur + "cch_perm", osm_eur + "queries", osm_eur + fake] do
     Dir.chdir "code/rust_road_router" do
       [1.0, 0.5, 0.2, 0.1, 0.05, 0.01].each do |epsilon|
-        sh "TRAFFIC_MAX_ITERATIONS=0 cargo run --release --bin cchpot_traffic_aware -- #{osm_eur} #{epsilon} #{fake} queries/1h > #{exp_dir}/epsilon/$(date --iso-8601=seconds).json"
+        sh "cargo run --release --bin cchpot_traffic_aware -- #{osm_eur} #{epsilon} #{fake} queries/1h > #{exp_dir}/epsilon/$(date --iso-8601=seconds).json"
       end
     end
   end
