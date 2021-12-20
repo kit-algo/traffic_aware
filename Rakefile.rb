@@ -7,6 +7,11 @@ file "paper/traffic.pdf" => [
   "paper/traffic.tex",
   "paper/table/epsilon.tex",
   "paper/table/graphs.tex",
+  "paper/table/data.tex",
+  "paper/fig/ubs_perf.pdf",
+  "paper/fig/detailed_perf_profile_time.pdf",
+  "paper/fig/detailed_perf_profile_quality.pdf",
+  "paper/fig/combined_perf_profile.pdf",
 ] do
   Dir.chdir "paper" do
     sh "latexmk -pdf traffic.tex"
@@ -22,6 +27,12 @@ namespace "fig" do
     "#{exp_dir}/ubs_perf/*.json",
   ] + ["eval/ubs_perf.py", "paper/fig"] do
     sh "eval/ubs_perf.py"
+  end
+
+  ["paper/fig/detailed_perf_profile_time.pdf", "paper/fig/detailed_perf_profile_quality.pdf", "paper/fig/combined_perf_profile.pdf"].each do |fig|
+    file fig => FileList["#{exp_dir}/data/*.json"] + ["eval/perf_profiles.py", "paper/fig"] do
+      sh "eval/perf_profiles.py"
+    end
   end
 end
 

@@ -24,23 +24,25 @@ queries = pd.DataFrame.from_records([{
 queries['instance'] = queries['graph'].map({'OSM Europe': 'OSM Eur ', 'DIMACS Europe': 'DIMACS Eur ', 'OSM Germany': 'OSM Ger '}) + queries['metric'].map({'fake_traffic': 'Syn', 'heavy_traffic': 'Fri', 'lite_traffic': 'Tue'})
 
 queries_sub = queries.query("~(graph == 'OSM Germany' & metric == 'fake_traffic') & epsilon == 0.2")
-table = queries_sub.groupby(['queries', 'instance', 'algo']) \
-    .mean()[['length_increase_percent', 'num_iterations', 'num_forbidden_paths', 'running_time_ms', 'failed']] \
+table = queries_sub.query('~failed').groupby(['queries', 'instance', 'algo']).mean()[['length_increase_percent']].join( \
+    queries_sub.groupby(['queries', 'instance', 'algo']) \
+    .mean()[['running_time_ms', 'failed']]) \
     .unstack()
 
 table['failed'] *= 100
 table = table.round(1)
-table = table.rename(columns={ 'iterative_detour_blocking': 'IDB', 'iterative_path_blocking': 'IPB' })
+table = table.rename(columns={ 'iterative_detour_blocking': 'IDB', 'iterative_path_blocking': 'IPB', 'iterative_path_fixing': 'IPF' })
+table = table.reindex(columns=['IPB', 'IDB', 'IPF'], level=1)
 
 output = table.to_latex()
 output = output.replace('queries/1h', R"\multirow{4}{*}{\rotatebox[origin=c]{90}{1h}}")
 output = output.replace('queries/4h', R"\addlinespace \multirow{4}{*}{\rotatebox[origin=c]{90}{4h}}")
 output = output.replace('queries/uniform', R"\addlinespace \multirow{4}{*}{\rotatebox[origin=c]{90}{Random}}")
 lines = output.split("\n")
-lines = [R'\setlength{\tabcolsep}{4pt}'] + lines[:2] + [
-    R" & & \multicolumn{2}{c}{Increase $[\%]$} & \multicolumn{2}{c}{Iterations} & \multicolumn{2}{c}{Blocked Paths} & \multicolumn{2}{c}{Time [ms]} & \multicolumn{2}{c}{Failed $[\%]$} \\",
-    R"\cmidrule(l{3pt}r{3pt}){3-4} \cmidrule(l{3pt}r{3pt}){5-6} \cmidrule(l{3pt}r{3pt}){7-8} \cmidrule(l{3pt}r{3pt}){9-10} \cmidrule(l{3pt}r{3pt}){11-12}",
-    R" & & IDB & IPB & IDB & IPB & IDB & IPB & IDB & IPB & IDB & IPB \\"
+lines = lines[:2] + [
+    R" & & \multicolumn{3}{c}{Increase $[\%]$} & \multicolumn{3}{c}{Running time [ms]} & \multicolumn{3}{c}{Failed $[\%]$} \\",
+    R"\cmidrule(lr){3-5} \cmidrule(lr){6-8} \cmidrule(lr){9-11}",
+    R" & & IPB & IDB & IPF & IPB & IDB & IPF & IPB & IDB & IPF \\"
 ] + lines[5:]
 output = add_latex_big_number_spaces("\n".join(lines) + "\n")
 

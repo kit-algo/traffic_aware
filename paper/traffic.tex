@@ -346,7 +346,7 @@ In this paper, we propose optimized implementations for both phases based on Laz
 \draw[->] (s) to [bend right=30] node [midway, below] { 6 } (v);
 \draw[->] (u) to [bend left=30] node [midway, above] { 1, 10 } (t);
 \end{tikzpicture}
-\caption{Example graph where for $\epsilon = 2$ the shortest $\epsilon$-smooth path $(s,v,t)$ is not prefix-optimal. For all arcs except $ut$, the smooth and the volatile metric are equal. For $uv$, the smooth weight is 1 and the volatile weight 10.}
+\caption{Example graph where for $\epsilon = 1$ the shortest $\epsilon$-smooth path $(s,v,t)$ is not prefix-optimal. For all arcs except $ut$, the smooth and the volatile metric are equal. For $uv$, the smooth weight is 1 and the volatile weight 10.}
 \label{fig:ipb_counterexample}
 \end{figure}
 
@@ -358,8 +358,8 @@ Because Dijkstra's algorithm in this variant will only find prefix optimal paths
 This may cause this variant to miss valid paths.
 See Figure~\ref{fig:ipb_counterexample} for an example.
 The algorithm will find the path $(s,u,v,t)$ in the first iteration.
-This path is not 2-smooth because $(u,v,t)$ has stretch 3.
-The shortest 2-smooth path is $(s,v,t)$ but the algorithm will instead find $(s,u,t)$ because the path $(s,v)$ is not prefix optimal.
+This path is not 1-smooth because $(u,v,t)$ has stretch 3.
+The shortest 1-smooth path is $(s,v,t)$ but the algorithm will instead find $(s,u,t)$ because the prefix $(s,v)$ is not optimal.
 We will refer to this variant from now on by \emph{iterative detour blocking} (IDB).
 IDB will still find a valid path though it may not necessarily be the shortest.
 Therefore, it is only a heuristic for the SSPP.
@@ -583,7 +583,7 @@ We report these queries as failed but nevertheless do include their running time
 \centering
 \includegraphics[width=\linewidth]{fig/ubs_perf.pdf}
 \caption{
-Running times of different UBS checking algorithms for paths encountered by IDB when answering queries of different ranks with $\epsilon = 0.2$.
+Running times of different UBS checking algorithms for paths encountered by IDB when answering queries of different ranks with $\epsilon = 0.2$ on OSM Europe.
 The boxes cover the range between the first and third quartile.
 The band in the box indicates the median, the whiskers cover 1.5 times the interquartile range.
 All other running times are indicated as outliers.
@@ -660,6 +660,14 @@ TODO
 }\label{tab:data}
 \input{table/data.tex}
 \end{table}
+
+\begin{figure}
+\centering
+\includegraphics[width=\linewidth]{fig/combined_perf_profile.pdf}
+\caption{
+TODO
+}\label{fig:perf_profile}
+\end{figure}
 
 \section{Conclusion}
 
@@ -808,7 +816,25 @@ TODO
 
 \bibliography{references}
 
-% \appendix
+\appendix
+
+\section{Detailed Performance Profiles by Instance}\label{sec:perf_profile_instance}
+
+\begin{figure}
+\centering
+\includegraphics[width=.95\linewidth]{fig/detailed_perf_profile_time.pdf}
+\caption{
+TODO
+}\label{fig:perf_profile_time}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=.95\linewidth]{fig/detailed_perf_profile_quality.pdf}
+\caption{
+TODO
+}\label{fig:perf_profile_quality}
+\end{figure}
 
 % \section{Styles of lists, enumerations, and descriptions}\label{sec:itemStyles}
 
