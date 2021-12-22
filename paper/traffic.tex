@@ -655,12 +655,16 @@ Clearly, drawing statistically sound conclusions from this experiment requires a
 \centering
 \includegraphics[width=\linewidth]{fig/combined_perf_profile.pdf}
 \caption{
-TODO
-% TODO explain perf profile
+Relative performance profiles of our algorithms on all queries from Table~\ref{tab:data}.
+Let $\mathcal{A}$ be the set of algorithms, $\mathcal{Q}$ the set of queries and $\operatorname{obj}(a, q)$ denote the considered measurement from the computation of $a \in \mathcal{A}$ to answer $q \in \mathcal{q}$.
+In our case that is either the running time or the length with respect to $w^*$ of the computed path.
+The performance ratio $r(a,q) = \frac{\operatorname{obj}(a, q)}{\min{\operatorname{obj}(a', q) \mid a' \in \mathcal{A}}}$ indicates by what factor $a$ deviates from the best solution or the shortest running time for the query $q$.
+The performance profile $\rho_a : [1,\infty) \to [0,1], \tau \mapsto \frac{|\{q \in \mathcal{Q} | r(a, q) \leq \tau \}|}{|\mathcal{Q}|}$ of $a$ is the fraction of queries for which $a$ is within a factor of $\tau$ of the best measurement.
+Computations that were aborted after 10\,s are not included.
 }\label{fig:perf_profile}
 \end{figure}
 
-Figure~\ref{fig:perf_profile} depicts performance profiles for running time and found path length off all queries from Table~\ref{tab:data} combined.
+Figure~\ref{fig:perf_profile} depicts performance profiles~\cite{TODO} for running time and found path length off all queries from Table~\ref{tab:data} combined.
 Investigating queries across all instances combined is possible because we study the relative performance of the different algorithms.
 For the sake of completeness, we also include the same performance profiles separated per instance and query set in the appendix (see Figure~\ref{fig:perf_profile_time} and \ref{fig:perf_profile_quality}).
 However, discussing the results in such detail is beyond the scope of this paper.
@@ -732,8 +736,16 @@ With that even our exact IPB algorithm is still an order of magnitude faster tha
 
 \section{Conclusion}
 
+studied shortest eps smooth path problem and prooved its np hardness.
+introduced efficient new algorithm for UBS computation.
+outperforms state-of-the-art many-to-many UBS computation by two orders of magnitude
+can be applied to other measures such as local optimality
+
+took IDB from delling and improved it with CH-Pot and our new UBS -> two orders of magnitude speedup
+also extended to exact, still one order of magnitude faster than delling IDB
+also introduced IPF a simple and practical heuristic which finds good path in few tenths of milliseconds
+
 % TODO future work TD
-% path repairing heuristic
 % work around performance problems (circles, expontial number of forb paths - forbid corridors)
 
 % \section{Typesetting instructions -- Summary}
