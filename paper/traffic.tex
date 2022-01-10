@@ -638,7 +638,6 @@ Note that random queries on OSM Germany are on average shorter than four hours w
 The length increase of the solutions primarily depends on the instance but much less on the query set.
 The synthetic traffic affects DIMACS Europe stronger than OSM Europe.
 reason: modeling detail
-Both real world traffic scenarios appear to have a stronger impact than the simulated traffic.
 In terms of running time, IDB is significantly faster than IPB and IPF is significantly faster still, which is roughly what we expected.
 Conversely, the heuristics find somewhat longer paths than the exact IPB algorithm and IPF appears to find worse paths than IDB.
 However, one has to be careful interpreting these numbers as a non-negligible amount of queries did not terminate with IPB and IDB.
@@ -647,7 +646,7 @@ Because the length increase numbers are averages over different sets, it is not 
 When limiting the evaluation to queries where all algorithms finished successfully, the difference between IDB and IPB almost disappears.
 The gap to IPF also becomes smaller but remains significant.
 For running times, the averages are also difficult to interpret.
-They are heavily skewed by outliers and there is little reason to assume that would be normally distributed.
+They are heavily skewed by outliers and there is little reason to assume that they would be normally distributed.
 For example, median running times for 1h queries of all algorithms on all instances are all below 2\,ms and the differences for the other query sets become only more extreme.
 Clearly, drawing statistically sound conclusions from this experiment requires a closer look.
 
@@ -656,15 +655,15 @@ Clearly, drawing statistically sound conclusions from this experiment requires a
 \includegraphics[width=\linewidth]{fig/combined_perf_profile.pdf}
 \caption{
 Relative performance profiles of our algorithms on all queries from Table~\ref{tab:data}.
+}\label{fig:perf_profile}
+\end{figure}
+
+Figure~\ref{fig:perf_profile} depicts performance profiles~\cite{dolan2002benchmarking} for running time and found path length off all queries from Table~\ref{tab:data} combined.
 Let $\mathcal{A}$ be the set of algorithms, $\mathcal{Q}$ the set of queries and $\operatorname{obj}(a, q)$ denote the considered measurement from the computation of $a \in \mathcal{A}$ to answer $q \in \mathcal{q}$.
 In our case that is either the running time or the length with respect to $w^*$ of the computed path.
 The performance ratio $r(a,q) = \frac{\operatorname{obj}(a, q)}{\min{\operatorname{obj}(a', q) \mid a' \in \mathcal{A}}}$ indicates by what factor $a$ deviates from the best solution or the shortest running time for the query $q$.
 The performance profile $\rho_a : [1,\infty) \to [0,1], \tau \mapsto \frac{|\{q \in \mathcal{Q} | r(a, q) \leq \tau \}|}{|\mathcal{Q}|}$ of $a$ is the fraction of queries for which $a$ is within a factor of $\tau$ of the best measurement.
-Computations that were aborted after 10\,s are not included.
-}\label{fig:perf_profile}
-\end{figure}
-
-Figure~\ref{fig:perf_profile} depicts performance profiles~\cite{TODO} for running time and found path length off all queries from Table~\ref{tab:data} combined.
+For computations that were aborted after 10\,s $\operatorname{obj}(a, q) = \infty$.
 Investigating queries across all instances combined is possible because we study the relative performance of the different algorithms.
 For the sake of completeness, we also include the same performance profiles separated per instance and query set in the appendix (see Figure~\ref{fig:perf_profile_time} and \ref{fig:perf_profile_quality}).
 However, discussing the results in such detail is beyond the scope of this paper.
@@ -683,17 +682,17 @@ The line for IDB is almost constant.
 That means, there are only few queries where it does not find the best solution.
 Even when it does not find the best solution, it is close to the best one, i.e. the maximum length increase factor over the best solution is 1.36 and all other values are below 1.1.
 It is quite possible that IDB found the optimal solution even in some of the queries where IPB did not terminate but of course this can not be proven.
-The qualitative performance of IPF varies stringer.
+The qualitative performance of IPF varies stronger.
 It also finds the best solution on 85\% of the queries.
 More than 99\% of the obtained solutions are within factor 1.2 to the best found.
-In the worst case IPF found a path 1.96 times the length of the best one found.
+In the worst case IPF found a path 1.96 times the length of the best one found by another algorithm.
 
 In combination with the averages reported in Table~\ref{tab:data} we can now draw some conclusions on the performance of the algorithms.
 IPF is the algorithm with the most stable running time.
 Even though it is not always the fastest it is never much slower than any other algorithm.
 It is the only algorithm able to answer all queries in less than 10 seconds.
 In fact, it usually needs only few milliseconds and only up to a couple of hundreds of milliseconds for extreme cases.
-It pays for this  with solution quality but is still very close for the vast majority of queries.
+It pays for this with solution quality but is still very close for the vast majority of queries.
 This makes it an algorithm suitable for practical applications.
 IDB is also a very effective heuristic.
 It is drastically faster than the exact algorithm and sometimes even faster than IPF.
@@ -704,7 +703,7 @@ The running time of IPB varies even stronger.
 On the one hand many easy queries can be answered in few milliseconds but on the other hand 25\% of all queries can not be answered in less than 10\,s.
 The feasibility of solving the problem to exactness with IPB strongly depends on the distance of queries and on the smoothness of the $w^*$ metric.
 
-\begin{table}
+\begin{table}[t]
 \centering
 \caption{
 Average performance of our implementations of IPB, IDB and IPF for different values of $\epsilon$ with 1h queries on OSM Europe with synthetic live traffic.
@@ -719,8 +718,8 @@ For our final experiment, we evaluate the performance of our algorithms with dif
 Table~\ref{tab:epsilon} depicts the results.
 This experiment was also performed in~\cite{dss-tarrn-18} but with only 100 queries.
 Given the observation from the previous experiment, it should be clear that reported averages allow only for very rough comparisons.
-However, it is the only data available to us to compare against related work.
-Also note that due to the presence of heavy outliers, performing to few queries can distort the numbers drastically.
+However, it is the only data available to compare against related work.
+Also note that due to the presence of heavy outliers, performing too few queries can distort the numbers drastically.
 For example, when we ran the same experiment with only 100 queries, the average running times of IDB were an order of magnitude faster.
 
 We observe similar trends as Delling et al.
@@ -736,16 +735,22 @@ With that even our exact IPB algorithm is still an order of magnitude faster tha
 
 \section{Conclusion}
 
-studied shortest eps smooth path problem and prooved its np hardness.
-introduced efficient new algorithm for UBS computation.
-outperforms state-of-the-art many-to-many UBS computation by two orders of magnitude
-can be applied to other measures such as local optimality
+In this paper, we studied the shortest smooth path problem and proved its $\mathcal{NP}$-completeness.
+We introduced a new algorithm for practically efficient UBS computation.
+This algorithm can compute the exact UBS of typically occurring paths with very few shortest path computations.
+It outperforms state-of-the-art exact UBS algorithms by around two orders of magnitude and makes computing exact UBS values feasible in practice.
+Also, it can be used for other path quality measures such as local optimality.
 
-took IDB from delling and improved it with CH-Pot and our new UBS -> two orders of magnitude speedup
-also extended to exact, still one order of magnitude faster than delling IDB
-also introduced IPF a simple and practical heuristic which finds good path in few tenths of milliseconds
+We also adapted the existing IDB algorithm and realized it with our new UBS algorithm and A* with CH-Potentials.
+This realization of IDB outperforms the original implementation by two orders of magnitude.
+Also, we present necessary modifications to make the algorithm exact.
+Our exact version is still about an order of magnitude than the original heuristic implementation.
+As IDB and IPB are not always able to find solutions in reasonable time, we introduce another heuristic, IPF.
+IPF can consistently find smooth paths even for random queries on massive continental sized instances in a few tenths of milliseconds.
 
-% TODO future work TD
+For future work we would like to apply our algorithms not only to life traffic but also to predicted traffic, e.g. find smooth paths in a time-dependent setting.
+Further, we it would be interesting to study what causes IDB to be so much faster than IPB while retaining most of the quality.
+This could possibly be traced to specific structures in road networks which then in turn could be exploited to speed up IPB.
 % work around performance problems (circles, expontial number of forb paths - forbid corridors)
 
 % \section{Typesetting instructions -- Summary}
@@ -897,7 +902,7 @@ also introduced IPF a simple and practical heuristic which finds good path in fe
 \centering
 \includegraphics[width=.95\linewidth]{fig/detailed_perf_profile_time.pdf}
 \caption{
-TODO
+Relative performance profile for the running time of our algorithms on all queries from Table~\ref{tab:data} split by graph and query set.
 }\label{fig:perf_profile_time}
 \end{figure}
 
@@ -905,7 +910,7 @@ TODO
 \centering
 \includegraphics[width=.95\linewidth]{fig/detailed_perf_profile_quality.pdf}
 \caption{
-TODO
+Relative performance profile for solution quality of our algorithms on all queries from Table~\ref{tab:data} split by graph and query set.
 }\label{fig:perf_profile_quality}
 \end{figure}
 
