@@ -84,14 +84,84 @@
 
 %TODO mandatory: add short abstract of the document
 \begin{abstract}
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent convallis orci arcu, eu mollis dolor. Aliquam eleifend suscipit lacinia. Maecenas quam mi, porta ut lacinia sed, convallis ac dui. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse potenti. 
+We study the shortest smooth path problem.
+It is motivated by traffic-aware routing in road networks.
+The goal is to compute the fastest route considering the current traffic situation while avoiding undesired detours such as briefly using a parking area to bypass a jammed highway.
+% Detours are prevented by limiting the uniformly bounded stretch, i.e. the maximum stretch over all subpaths, with respect to a second smooth weight function which disregards the traffic situation.
+In this paper, we settle the complexity of the problem and show that is strongly $\mathcal{NP}$-complete.
+We then present practical algorithms to solve the problem efficiently on continental-sized road networks.
+% Lazy RPHAST on-demand shortest path trees
+A crucial building block is a novel algorithm to compute the uniformly bounded stretch (UBS) with only a few shortest path computations on typical paths.
+An extensive evaluation shows that our algorithms outperform the state of the art by at least an order of magnitude.
+It also shows that our new UBS algorithm outperforms existing approaches by two orders of magnitude and is the first algorithm which allows computing exact UBS values in a matter of milliseconds.
+
+% proof hardness
+% introduce first algo to compute exact UBS in milliseconds
+% present IPF heuristic
+% speed up IDB
+% adjustments to make exact
+% extensive evaluation
 \end{abstract}
 
 \newpage
 
 \section{Introduction}
-\subsection{Related Work}
-\cite{bdgmpsww-rptn-16}
+
+Mobile navigation and mapping applications have become ubiquitous.
+These applications allow users to query good routes between locations in the road network.
+Such queries are usually answered by computing shortest paths on a weighted graph representing the road network with travel times as weights.
+This is useful to users unfamiliar in a certain area to find their way.
+However, users familiar with their route also often use these applications because they take the current traffic situation into account.
+Considering the current traffic situation for the routing is crucial to suggest good routes to users.
+Integrating the current traffic situation comes with its own challenges.
+As traffic feeds are derived from live data, they are inherently noisy and incomplete.
+Solving the classical shortest path problem with free flow travel times exchanged for live traffic travel times may lead to problematic routes including undesired detours such as briefly using a parking area to bypass a jammed highway.
+In this paper, we therefore study an extended problem model, the shortest smooth path problem (SSPP).
+In takes two weight functions into account to avoid such undesired detours.
+The first \emph{volatile} weight function models the current traffic situation.
+The second \emph{smooth} weight function models the free flow travel times and may include additional penalties, for example to avoid residential areas.
+The goal is then to find the shortest path with respect to the volatile weights which has a limited uniformly bounded stretch, i.e maximum stretch over all subpaths with respect to the smooth weights.
+
+\subparagraph{Related Work}
+
+The classical shortest path problem on weighted graphs can be solved with Dijkstra's algorithm~\cite{d-ntpcg-59}.
+To this day, no asymptotically faster algorithm is known.
+However, for many practical applications on continental-sized road networks, it is too slow.
+Thus, the past decade has seen a lot of research effort on engineering faster shortest path algorithms for road networks.
+Part of this research has played an important role in enabling modern routing applications.
+By introducing an offline preprocessing phase where auxiliary data is precomputed, queries can be accelerated by more than three orders of magnitude over Dijkstra's algorithm.
+For an extensive overview over available speed-up techniques, we refer to~\cite{bdgmpsww-rptn-16}.
+
+One particularly popular such speed-up technique is Contraction Hierarchies (CH)~\cite{gssv-erlrn-12}.
+Our work also makes use of CH.
+During preprocessing, additional shortcut edges are inserted into the graph, which skip over unimportant vertices.
+This preprocessing typically takes a few minutes.
+Then, shortest path queries can be answered in less than a millisecond.
+Applying CH to extended problem models is not trivially possible.
+We therefore utilize the easier to extend classical A* algorithm~\cite{hnr-afbhd-68} with a CH-based heuristic~\cite{strasser_et_al:LIPIcs.SEA.2021.6}.
+
+Research on route planning algorithms and traffic has so far mostly focused on the interactions between traffic and the preprocessing.
+For live traffic, the results were so called \emph{customizable} speed-up techniques which have a two preprocessing phases.
+The first one may be slow but must be independent of any weight function.
+The second one, called \emph{customization}, typically takes few seconds or less and allows regular traffic updates.
+CRP was the first such three-phase technique and has since been extended into an extensive framework of routing algorithms~\cite{bdgmpsww-rptn-16}.
+CH have with Customizable Contraction Hierarchies (CCH) also been extended to a three-phase setup~\cite{dsw-cch-15}.
+Another line of research studies the integration of predicted traffic~\cite{dn-crdtd-12,bgsv-mtdtt-13,bdpw-dtdrp-16,swz-sfert-21}.
+Here, edge weights are functions of the time instead of scalar values.
+
+The shortest smooth path problem was originally introduced in~\cite{dss-tarrn-18}.
+The paper includes two CRP-based algorithms for the SSPP.
+Our work builds and improves on one of the algorithms presented there.
+An important subproblem of SSPP is the computation of UBS values of paths.
+The UBS has been used before in the context of alternative route algorithms~\cite{adgw-arrn-13} as a measure of quality of alternative routes.
+
+\subparagraph{Outline}
+
+The rest of the paper is organized as follows:
+Section~\ref{sec:prelim} contains notation and recapitulates existing algorithms we build open.
+In Section~\ref{sec:complexity}, we prove that SSPP is strongly $\mathcal{NP}$-complete.
+Section~\ref{sec:algos} contains our improved adaptation of the iterative path blocking algorithm from~\cite{dss-tarrn-18}, our novel UBS computation algorithm and a new heuristic for SSPP: the iterative path fixing algorithm.
+In Section~\ref{sec:eval}, we present a thorough evaluation of our algorithm which confirms their applicability.
 
 \section{Preliminaries}
 \label{sec:prelim}
@@ -136,7 +206,7 @@ For this, one can store for each shortcut the node which was contracted when the
 The set of nodes reachable in $\gchu$ and $\gchd$ is called the \emph{CH search space} of a node.
 
 \begin{algorithm2e}
-\KwData{$\mathtt{D}^{\downarrow}[u]$: tentative distance from $u$ to $t$ as computed by Dijkstra's algorithm on $\gchd$}
+\KwData{$\mathtt{D}^{\downarrow}[u]$: tentative distance from $u$ to $t$ computed by Dijkstra's algorithm on $\gchd$}
 \KwData{$\mathtt{P}[u]$: parent node on the shortest path from $u$ to $t$, as computed Dijkstra's algorithm on $\gchd$}
 \KwData{$\mathtt{D}[u]$: memoized final distance from $u$ to $t$, initially $\bot$}
 \SetKwFunction{Dist}{ComputeAndMemoizeDist}
@@ -193,7 +263,7 @@ In~\cite{dss-tarrn-18}, Delling et al. introduce the shortest smooth path proble
 A path $P$ is $\epsilon$-smooth with regards to a metric $w$ when $\ubs_w(P) < 1 + \epsilon$.
 Given a graph $G$, nodes $s$ and $t$, a smooth weight function $w$ and a volatile weight function $w^*$ and a parameter $\epsilon > 0$, the shortest smooth path problem is to find the shortest path with respect to $w^*$ that is $\epsilon$-smooth with regards to $w$.
 
-\section{Complexity}
+\section{Complexity}\label{sec:complexity}
 
 \begin{figure}
 \centering
@@ -315,7 +385,7 @@ Thus, the SSPP solution induces a valid solution for the \textsc{HamiltonPath} i
 \end{proof}
 % TODO get rid of superscript??
 
-\section{Algorithms}
+\section{Algorithms}\label{sec:algos}
 
 Delling et al. propose the Iterative Path Blocking (IPB) algorithm to solve the SSPP optimally.
 The algorithm loops over two phases until a valid path is found.
@@ -329,7 +399,7 @@ This framework can be implemented with different concrete algorithms for both ph
 The implementation described in~\cite{dss-tarrn-18} is based on CRP~\cite{dgpw-crprn-13}.
 In this paper, we propose optimized implementations for both phases based on Lazy RPHAST and (C)CH-Potentials.
 
-\subsection{Avoiding Blocked Paths}
+\subsection{Avoiding Blocked Paths}\label{sec:ipb}
 
 \begin{figure}
 \centering
@@ -545,7 +615,7 @@ In this case we iteratively continue to replace violating segments.
 When a path contains overlapping violating subpaths, we replace the first, ignore following overlapping subpaths and continue with the next non-overlapping segment.
 We denote this algorithm as \emph{iterative path fixing}.
 
-\section{Evaluation}
+\section{Evaluation}\label{sec:eval}
 
 In this section, we present our experimental results.
 Our benchmark machine runs openSUSE Leap 15.3 (kernel 5.3.18), and has 192\,GiB of DDR4-2666 RAM and two Intel Xeon Gold 6144 CPUs, each of which has eight cores clocked at 3.5\,GHz and 8~$\times$~64\,KiB of L1, 8~$\times$~1\,MiB of L2, and 24.75\,MiB of shared L3 cache.
@@ -748,7 +818,7 @@ Our exact version is still about an order of magnitude than the original heurist
 As IDB and IPB are not always able to find solutions in reasonable time, we introduce another heuristic, IPF.
 IPF can consistently find smooth paths even for random queries on massive continental sized instances in a few tenths of milliseconds.
 
-For future work we would like to apply our algorithms not only to life traffic but also to predicted traffic, e.g. find smooth paths in a time-dependent setting.
+For future work we would like to apply our algorithms not only to life traffic but also to predicted traffic, i.e. find smooth paths in a time-dependent setting.
 Further, we it would be interesting to study what causes IDB to be so much faster than IPB while retaining most of the quality.
 This could possibly be traced to specific structures in road networks which then in turn could be exploited to speed up IPB.
 % work around performance problems (circles, expontial number of forb paths - forbid corridors)
