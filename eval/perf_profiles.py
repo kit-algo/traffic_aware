@@ -88,7 +88,7 @@ g.set(xscale="log")
 g.set_xlabels('Slowdown over fastest')
 g.set_ylabels('Fraction of queries')
 g.set_titles(col_template="{col_name}", row_template="{row_name}")
-g.add_legend(title='Algorithm')
+g.axes[2][3].legend(title='Algorithm', loc='lower right')
 for axs in g.axes:
     for ax in axs:
         ax.xaxis.set_major_formatter(mpl.ticker.LogFormatter())
@@ -110,7 +110,7 @@ g.map_dataframe(sns.lineplot, x='len_perf', y='len_ratio', drawstyle='steps-post
 g.set_titles(col_template="{col_name}", row_template="{row_name}")
 g.set_xlabels('Length increase factor over best')
 g.set_ylabels('Fraction of queries')
-g.add_legend(title='Algorithm')
+g.axes[2][3].legend(title='Algorithm', loc='lower right')
 for axs in g.axes:
     for ax in axs:
         max_x = ax.get_xlim()[1]
