@@ -31,10 +31,10 @@ table = queries_sub.query('~failed').groupby(['queries', 'instance', 'algo']).me
 
 table['failed'] *= 100
 table = table.round(1)
-table = table.rename(columns={ 'iterative_detour_blocking': 'IDB', 'iterative_path_blocking': 'IPB', 'iterative_path_fixing': 'IPF' })
-table = table.reindex(columns=['IPB', 'IDB', 'IPF'], level=1)
+table = table.rename(columns=algo_names)
+table = table.reindex(columns=algo_selection, level=1)
 
-output = table.to_latex()
+output = table.to_latex(column_format=R'llr@{\hskip8pt}r@{\hskip8pt}rr@{\hskip8pt}r@{\hskip8pt}rr@{\hskip8pt}r@{\hskip8pt}r')
 output = output.replace('queries/1h', R"\multirow{4}{*}{\rotatebox[origin=c]{90}{1h}}")
 output = output.replace('queries/4h', R"\addlinespace \multirow{4}{*}{\rotatebox[origin=c]{90}{4h}}")
 output = output.replace('queries/uniform', R"\addlinespace \multirow{4}{*}{\rotatebox[origin=c]{90}{Random}}")
@@ -42,7 +42,7 @@ lines = output.split("\n")
 lines = lines[:2] + [
     R" & & \multicolumn{3}{c}{Increase $[\%]$} & \multicolumn{3}{c}{Running time [ms]} & \multicolumn{3}{c}{Failed $[\%]$} \\",
     R"\cmidrule(lr){3-5} \cmidrule(lr){6-8} \cmidrule(lr){9-11}",
-    R" & & IPB & IDB & IPF & IPB & IDB & IPF & IPB & IDB & IPF \\"
+    R" & & IPB-E & IPB-H & IPF & IPB-E & IPB-H & IPF & IPB-E & IPB-H & IPF \\"
 ] + lines[5:]
 output = add_latex_big_number_spaces("\n".join(lines) + "\n")
 

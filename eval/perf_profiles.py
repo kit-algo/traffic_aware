@@ -29,11 +29,11 @@ queries = pd.DataFrame.from_records([{
 
 queries['instance'] = queries['graph'].map({'OSM Europe': 'OSM Eur ', 'DIMACS Europe': 'DIMACS Eur ', 'OSM Germany': 'OSM Ger '}) + queries['metric'].map({'fake_traffic': 'Syn', 'heavy_traffic': 'Fri', 'lite_traffic': 'Tue'})
 queries['queries'] = queries['queries'].map({ 'queries/1h': '1h', 'queries/4h': '4h', 'queries/uniform': 'Random' })
-queries['algo'] = queries['algo'].map({ 'iterative_detour_blocking': 'IDB', 'iterative_path_blocking': 'IPB', 'iterative_path_fixing': 'IPF' })
+queries['algo'] = queries['algo'].map(algo_names)
 
 instance_order = ['DIMACS Eur Syn', 'OSM Eur Syn', 'OSM Ger Fri', 'OSM Ger Tue']
 query_order = ['1h', '4h', 'Random']
-algo_order = ['IPB', 'IDB', 'IPF']
+algo_order = algo_selection
 
 per_query_grouper = ['queries', 'instance', 'epsilon', 'from', 'to']
 best_values = queries.query('~failed').groupby(per_query_grouper)[['running_time_ms', 'length_increase_percent']].min()

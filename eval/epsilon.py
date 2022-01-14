@@ -32,10 +32,10 @@ cols1 = ['total_exploration_time_ms', 'total_ubs_time_ms', 'running_time_ms', 'n
 cols2 = ['length_increase_percent', 'num_iterations']
 table[cols1] = table[cols1].round(1)
 table[cols2] = table[cols2].round(2)
-table = table.rename(index={ 'iterative_detour_blocking': 'IDB', 'iterative_path_blocking': 'IPB', 'iterative_path_fixing': 'IPF' })
-table = table.reindex(index=['IPB', 'IDB', 'IPF'], level=1)
+table = table.rename(index=algo_names)
+table = table.reindex(index=algo_selection, level=1)
 
-lines = table.rename(index=lambda x: R"\multirow{3}{*}{" + "{:.2f}".format(x) +R"}", level=0).to_latex(escape=False, column_format='ccrrrrrrr', na_rep='-').split("\n")
+lines = table.rename(index=lambda x: R"\multirow{3}{*}{" + "{:.2f}".format(x) +R"}", level=0).to_latex(escape=False, column_format='clrrrrrrr', na_rep='-').split("\n")
 lines = lines[:2] + [
   R"            & & Increase & Iterations & Blocked & \multicolumn{3}{c}{Running time [ms]} & Failed \\ \cmidrule(lr){6-8}",
   R" $\epsilon$ & &   $[\%]$ &            &   paths & A* & UBS & Total                      & $[\%]$ \\"

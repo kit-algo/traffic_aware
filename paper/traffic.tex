@@ -84,11 +84,10 @@
 
 %TODO mandatory: add short abstract of the document
 \begin{abstract}
-We study the shortest smooth path problem.
-It is motivated by traffic-aware routing in road networks.
-The goal is to compute the fastest route considering the current traffic situation while avoiding undesired detours such as briefly using a parking area to bypass a jammed highway.
+We study the shortest smooth path problem, which is motivated by traffic-aware routing in road networks.
+The goal is to compute the fastest route according to the current traffic situation while avoiding undesired detours, such as briefly using a parking area to bypass a jammed highway.
 % Detours are prevented by limiting the uniformly bounded stretch, i.e. the maximum stretch over all subpaths, with respect to a second smooth weight function which disregards the traffic situation.
-In this paper, we settle the complexity of the problem and show that is strongly $\mathcal{NP}$-complete.
+In this paper, we settle the complexity of the problem and show that it is strongly $\mathcal{NP}$-complete.
 % TODO efficiently vs NP-hard
 We then present practical algorithms to solve the problem efficiently on continental-sized road networks.
 % Lazy RPHAST on-demand shortest path trees
@@ -108,7 +107,7 @@ It also shows that our new UBS algorithm outperforms existing approaches by two 
 
 \section{Introduction}
 
-Over the past years, mobile navigation and mapping applications have become ubiquitous.
+Over the past years, mobile navigation applications have become ubiquitous.
 A core feature of these applications is to compute good routes between locations in the road network.
 These routes can be obtained by computing shortest paths on a weighted graph representing the road network with travel times as weights.
 % This is useful to users unfamiliar in a certain area to find their way.
@@ -134,16 +133,16 @@ By introducing an offline preprocessing phase where auxiliary data is precompute
 For an extensive overview on these speed-up techniques, we refer to~\cite{bdgmpsww-rptn-16}.
 One particularly popular technique which we also utilize in this work is Contraction Hierarchies (CH)~\cite{gssv-erlrn-12}.
 During preprocessing, additional shortcut arcs are inserted into the graph, which skip over unimportant vertices.
-This preprocessing typically takes a few minutes.
-Then, shortest path queries can be answered in less than a millisecond.
+On continental-sized road networks with tens of millions of nodes and edges, this preprocessing typically takes a few minutes.
+Shortest path queries can be answered in less than a millisecond.
 Applying CH to extended problem models is not trivially possible.
 We therefore utilize the easier to extend classical A* algorithm~\cite{hnr-afbhd-68} with CH-Potentials, a CH-based heuristic~\cite{strasser_et_al:LIPIcs.SEA.2021.6}.
 
 Research on route planning algorithms and traffic has so far mostly focused on the interactions between traffic and the preprocessing.
-For live traffic, the results were techniques which have a two preprocessing phases.
+For live traffic, this resulted in techniques which have two preprocessing phases.
 The first one may be slow but must be independent of any weight function.
 The second one, called \emph{customization}, typically takes few seconds or less and allows regular traffic updates.
-CRP was the first such three-phase technique and has since been extended into an extensive framework of routing algorithms~\cite{bdgmpsww-rptn-16}.
+CRP was the first such three-phase technique and has since been extended into a comprehensive framework of routing algorithms~\cite{bdgmpsww-rptn-16}.
 With Customizable Contraction Hierarchies (CCH), CH has also been extended to a three-phase setup~\cite{dsw-cch-15}.
 Another line of research studies the integration of predicted traffic~\cite{dn-crdtd-12,bgsv-mtdtt-13,bdpw-dtdrp-16,swz-sfert-21}.
 Here, edge weights are functions of the time instead of scalar values.
@@ -238,21 +237,17 @@ Lazy RPHAST~\cite{strasser_et_al:LIPIcs.SEA.2021.6} is a CH-based algorithm to q
 Lazy RPHAST starts by running Dijkstra's algorithm from $t$ on $\gchd$, similar to a standard CH query.
 The forward search space, however, is explored through a recursive DFS-like search while memoizing distances to $t$ as depicted in Algorithm~\ref{algo:lazy_rphast}.
 This allows reusing the already computed distances for following sources.
+Lazy RPHAST can be used analogously to compute distances from one node to many targets by swapping $\gchu$ and $\gchd$.
 We employ Lazy RPHAST as both a many-to-one algorithm and as an A* heuristic.
 Lazy RPHAST as a A* heuristic is called CH-Potentials~\cite{strasser_et_al:LIPIcs.SEA.2021.6}.
 
-Our implementation extends on the original Lazy RPHAST algorithm by additionally storing parent pointers for path unpacking.
-Algorithm~\ref{algo:lazy_rphast} only yields paths through the CH search space.
-In Section~\ref{sec:lazy_rphast_path}, we introduce an algorithm to efficiently extract shortest path trees with unpacked shortcuts.
-Lazy RPHAST can be used analogously to compute distances from one node to many targets by swapping $\gchu$ and $\gchd$.
-
 Customizable Contraction Hierarchies (CCH)~\cite{dsw-cch-15} is a three-phase variant of CH.
 It allows fast updates to the preprocessing, for example to integrate information on the current traffic situation.
-However, this only touches the preprocessing.
+However, this only affects the preprocessing.
 The result of the CCH preprocessing is also an augmented graph, only with some additional properties.
 The CH query algorithms and Lazy RPHAST can be applied without any modification.
 For the algorithms we discuss in this paper, there is no practical difference between CH and CCH and we describe our algorithms based on augmented graphs.
-Our implementation is build on CCH-Potentials to support quick updates to live traffic weights.
+Our implementation is built on CCH-Potentials to support quick updates to live traffic weights.
 For a detailed discussion of the differences between CH and CCH and the changes to the preprocessing see~\cite{dsw-cch-15}.
 
 \subsection{Smooth Paths}
@@ -330,6 +325,7 @@ The thick arcs indicate a Hamiltonian path and the corresponding shortest $\epsi
 
 Delling et al. show some relations between SSPP and Knapsack but the complexity remains open in their paper.
 In this section, we prove that SSPP is strongly $\mathcal{NP}$-complete for any $\epsilon \in \mathbb{Q}^{>0}$.
+We therefore define the decision variant of the problem as follows:
 An instance $(G, w, w^*, s, t, k)$ is a \emph{yes} instance of $\epsilon$-\textsc{ShortestSmoothPath-Dec} if and only if there exists a path $P = (s,\dots, t)$ in $G$ with $w^*(P) \leq k$ and $\ubs_w(P) < 1 + \epsilon$.
 
 \begin{theorem}
@@ -337,17 +333,18 @@ An instance $(G, w, w^*, s, t, k)$ is a \emph{yes} instance of $\epsilon$-\texts
 \end{theorem}
 
 \begin{proof}
-A solution guessed by an oracle can be checked in polynomial time.
-Determining the the path length in $w^*$ take running time linear in the path length.
+A solution can be verified in polynomial time.
+Determining the path weight in $w^*$ takes running time linear in $\mathcal{O}(|P|)$.
 To check the UBS, shortest distances have to be computed for all $\mathcal{O}(|P|^2)$ subpaths.
 This shows that \textsc{ShortestSmoothPath-Dec} $\in \mathcal{NP}$.
 
 To prove the hardness, we give a reduction from the strongly $\mathcal{NP}$-complete \textsc{HamiltonPath} problem. % TODO cite completeness
-Let $G=(V,A)$ be the Hamilton Path instance.
+The goal is to find a \emph{Hamiltonian} path, i.e. a simple path which traverses every node exactly once.
+Let $G=(V,A)$ be the \textsc{HamiltonPath} instance.
 To distinguish them from the nodes in the SSPP instance, we will denote the nodes in $V$ as \emph{vertices}.
-We construct our SSPP instance by replicating the vertices of $G$ into $n$ layers and adding two additional nodes $s$ and $t$.
+We construct our SSPP instance by replicating the vertices of $G$ into $n$ layers and two additional nodes $s$ and $t$.
 We connect successive layers with the original arcs and additional arcs between nodes corresponding to the same vertex.
-Any $(s,\dots,t)$ path has exactly $|V|+1$ arcs and has to traverses all layers.
+Any $(s,\dots,t)$ path has exactly $|V|+1$ arcs and has to traverse all layers.
 We will choose the arc weights in such a way that the shortest $\epsilon$-smooth path between $s$ and $t$ has to use a different vertex in each layer.
 Paths using the same vertex in different layers will always be non-$\epsilon$-smooth in $w$ or too long in $w^*$.
 
@@ -367,10 +364,10 @@ Now, assume that the \textsc{HamiltonPath} instance admits a Hamiltonian path $P
 Then, $P' = (s, v_1^1, \dots, v_n^n, t)$ is a solution to the SSPP problem.
 The path uses two arcs from $A_{\operatorname{terminal}}$ and $|V|-1$ arcs from $A_{\operatorname{orig}}$.
 Thus, $w^{*}(P') = |V| + 1 = k$.
-Also, its $\ubs_w$ must be smaller than $1+\epsilon$.
+Also, its $\ubs_w(P')$ must be smaller than $1+\epsilon$.
 Due to Observation~\ref{obs:append_sp_ubs}, it is sufficient to show that the UBS is small enough for $P'' = (v_1^1, \dots, v_n^n)$.
 For any subpath $P''_{i,j} = (u^i, \dots v^j)$ for $i < j$, $u$ must not be equal to $v$ because $P$ is a Hamiltonian path.
-As all arcs are from $A_{\operatorname{orig}}$, $w(P''_{i,j})$ equals $(j-i) \cdot (1+\epsilon)$.
+As all arcs are from $A_{\operatorname{orig}}$, $w(P''_{i,j}) = (j-i) \cdot (1+\epsilon)$.
 The shortest path (with respect to $w$) between $u^i$ and $v^j$ has to use at least one $A_{\operatorname{orig}}$ arc because $u \neq v$.
 Thus, $\dist_w(P''_{i,j}) \geq (i - j - 1) + (1 + \epsilon)$.
 This yields
@@ -379,23 +376,22 @@ This yields
 \]
 which proves that $P'$ is valid solution for the SSPP instance.
 
-Conversely, suppose that our SSPP instance has an $\epsilon$-smooth path $P' = (s, v_1^1, \dots, v_n^n, t)$ of length $|V|+1$.
-Such a path can contain no arc from $A_{\operatorname{self}}$ because of the length with respect to $w$.
-We now show that no two nodes in the path can correspond to the same vertex and that $P = (v_1, \dots, v_n)$ is indeed a Hamiltonian path in $G$.
+Conversely, suppose that our SSPP instance has an $\epsilon$-smooth path $P' = (s, v_1^1, \dots, v_n^n, t)$ of weight $w^*(P') = |V|+1$.
+Such a path cannot contain any arcs from $A_{\operatorname{self}}$ because their volatile weight is 2.
+We now show that no two nodes in the path can correspond to the same vertex and thus that $P = (v_1, \dots, v_n)$ is indeed a Hamiltonian path in $G$.
 Suppose for contradiction that $P'_{i,j} = (v^i, \dots, v^j)$ was a subpath of $P'$.
 The length $w(P'_{i,j})$ is $(i-j) \cdot (1+\epsilon)$.
-Since start and end node correspond to the same vertex, the shortest path between these nodes is made up of arcs from $A_{\operatorname{self}}$ and has distance $\dist_w(v^i, v^j) = i-j$.
+Since start and end node correspond to the same vertex, the shortest path with respect to $w$ between these nodes is made up of arcs from $A_{\operatorname{self}}$ and has distance $\dist_w(v^i, v^j) = i-j$.
 Thus, $\ubs_w(P'_{i,j}) = (1+\epsilon)$ which means that this subpath must not be part of a solution for the SSPP instance.
 This is a contradiction.
 Thus, the SSPP solution induces a valid solution for the \textsc{HamiltonPath} instance.
 \end{proof}
-% TODO get rid of superscript??
 
 \section{Algorithms}\label{sec:algos}
 
 Delling et al. propose the Iterative Path Blocking (IPB) algorithm to solve the SSPP optimally.
 The algorithm repeats two steps until a valid path is found.
-It maintains a set of blocked paths.
+It maintains a set of blocked paths, which is initially empty.
 In the first step, a shortest path with regards to $w^*$ is computed while avoiding any blocked paths.
 In the second step, the obtained path is checked for subpaths violating the UBS constraint.
 Any violating subpaths are added to the list of blocked paths and the algorithm continues with the next iteration.
@@ -427,34 +423,37 @@ In this paper, we propose optimized implementations for both steps based on Lazy
 \end{figure}
 
 Delling et al. describe their approach to the first phase as a variant of Dijkstra's algorithm.
-When relaxing an arc $uv$ where $v$ is the endpoint of a blocked path, they backtrack the parent pointers of $v$ comparing the reconstructed path to the blocked path.
+When relaxing an arc $uv$ where $v$ is the endpoint of a blocked path, they backtrack the parent pointers of $v$, comparing the reconstructed path to the blocked path.
 Should the paths match, the search is pruned at $v$.
-This algorithm, however, to the best of our understanding, does not only avoid the paths in the blocked set.
-Because Dijkstra's algorithm in this variant will only find prefix optimal paths, it also avoids any detour onto nodes of a blocked path.
-This may cause this variant to miss valid paths.
+This algorithm correctly avoids blocked paths.
+However, it also avoids some additional paths because Dijkstra's algorithm by construction only finds prefix-optimal paths.
+But optimal shortest smooth paths may not be prefix-optimal with respect to the volatile metric $w^*$.
 See Figure~\ref{fig:ipb_counterexample} for an example.
+To the best of our understanding, IPB as described by Delling et al. will not find the shortest smooth path in this example.
 The algorithm will find the path $(s,u,v,t)$ in the first iteration.
-This path is not 1-smooth because $(u,v,t)$ has stretch 3.
-The shortest 1-smooth path is $(s,v,t)$ but the algorithm will instead find $(s,u,t)$ because the prefix $(s,v)$ is not optimal.
-We will refer to this variant from now on by \emph{iterative detour blocking} (IDB).
-IDB will still find a valid path though it may not necessarily be the shortest.
+This path is not 1-smooth because $(u,v,t)$ has stretch 3 and $(u,v,t)$ will be added to the blocked path set.
+With $(u,v,t)$ blocked, the algorithm will find the path $(s,u,t)$ in the next iteration and return it as the final result.
+However, the shortest 1-smooth path is $(s,v,t)$.
+It was missed because the prefix $(s,v)$ is not optimal in $w^*$ and was therefore pruned at $v$ by $(s,u,v)$.
+We will refer to this variant from now on by \emph{heuristic iterative path blocking} (IPB-H).
+IPB-H will still find an $\epsilon$-smooth path though it may not necessarily be the shortest.
 Therefore, it is only a heuristic for the SSPP.
 
-% forbidden vs blocked path
-Only avoiding actually blocked paths requires a more careful adjustment of Dijkstra's algorithm.
-In addition to the distance from the source, we need to keep track of the currently relevant blocked paths.
-It might be necessary to keep a label with greater distance from the start when it uses less blocked paths (see the example from Figure~\ref{fig:ipb_counterexample} where the label for $(s,v)$ needs to be kept at $u$ despite being longer than $(s,u,v)$).
-Thus, each node $v$ may have multiple labels and nodes may need to be popped multiple times from the queue.
-A \emph{label} $l$ consists of a distance from the source, a set of active blocked paths, and a pointer to the parent node and label for efficient path reconstruction.
-A blocked path $B$ is \emph{active} in a label $l$ when there exist a suffix of the path represented by $l$ which is a prefix of $B$.
-Labels may be discarded only when there is another label with shorter or equal distance and where the set of active blocked paths is a subset of the current labels blocked path set.
+To guarantee to find shortest smooth path with Dijkstra's algorithm, we need to adjust the notion of optimality used to compare labels.
+It might be necessary to keep a label with sub-optimal distance from the start as in the example from Figure~\ref{fig:ipb_counterexample} where the label for $(s,v)$ needs to be kept at $u$ despite being longer than $(s,u,v)$.
+This leads to a \emph{label-correcting} variation of Dijkstra's algorithm with the possibility for multiple labels per node.
+A \emph{label} $l$ at a node $v$ consists of a distance from the source $\mathtt{D}_l$, a set of active blocked paths $\mathtt{A}_l$, and a pointer to the parent node and label for efficient reconstruction of the path $P(l) = (s,\dots,v)$ represented by the label.
+The active blocked path set $\mathtt{A}_l$ contains all blocked paths which have a prefix which is a suffix of $P(l)$.
+A label $l$ can be discarded when $v$ has another label $l'$ with $\mathtt{D}_{l'} \leq \mathtt{D}_l$ and $\mathtt{A}_{l'} \subseteq \mathtt{A}_l$.
 
 The search is initialized with a single label at $s$ with distance zero and an empty set of active blocked paths.
-When a label $l$ is linked with an arc $uv$, we need to keep track of traversed blocked paths.
-When $uv$ is the first arc of a blocked path $P$, it needs to be added to the set of active blocked paths of the result label.
-For any active blocked path $B$ in $l$, we need to check if $uv$ lies on $B$.
-If this is the case, $B$ remains in the set of active blocked paths of the result label, or, if $uv$ is the last arc of $B$, the result label must be dropped.
-If $uv$ is not on $B$, the blocked path can be removed from the active blocked path set of the result label.
+When a node $u$ with a label $l_u$ is popped from the queue and an arc $uv$ is relaxed, we create a new label $l_v$ as follows:
+We set the distance $\mathtt{D}_{l_v} = \mathtt{D}_{l_u} + w^*(uv)$ and the parent label to $l_u$.
+We also need to keep track of traversed blocked paths.
+If $uv$ is the first arc of a blocked path $B = (u,v,\dots)$, the path $B$ needs to be added to $\mathtt{A}_{l_v}$.
+For any active blocked path $B = (\dots, u, w, \dots) \in \mathtt{A}_{l_u}$, we need to check if $w=v$, i.e. $uv$ lies on $B$.
+If this is the case, $B$ is contained in $\mathtt{A}_{l_v}$, or, if $uv$ is the last arc of $B$, the label $l_v$ must be dropped.
+If $uv$ is not on $B$, the blocked path is not in $\mathtt{A}_{l_v}$.
 
 An efficient implementation of this algorithm requires careful engineering.
 For each arc, we keep track of the blocked paths it lies on.
@@ -464,8 +463,8 @@ This allows for efficient subset checks with bit-wise operations.
 Additionally, each node maintains its own queue of labels ordered by distance from $s$.
 When the node is popped from the queue, it pops the next label from its queue and propagates only this label.
 If there are any remaining labels in the queue, the node is reinserted into the global queue.
-Finally, we utilize A* with CCH-Potentials to guide the search towards the target.
-As our experiments show, disallowing non $\epsilon$-smooth path increase distances only very little.
+Finally, we utilize A* with CCH-Potentials on the volatile metric to guide the search towards the target.
+As our experiments show, disallowing non $\epsilon$-smooth paths increase distances only very little.
 Thus, the heuristic is close to perfect and A* very effective for this problem.
 
 \subsection{Efficient UBS Computation}\label{sec:ubs_tree}
@@ -515,19 +514,19 @@ Thus, the heuristic is close to perfect and A* very effective for this problem.
 \label{fig:ubs_tree}
 \end{figure}
 
-According to Delling et al.~\cite{dss-tarrn-18}, the UBS computation is one of the bottlenecks of the IDB approach.
+According to Delling et al.~\cite{dss-tarrn-18}, the UBS computation is one of the bottlenecks of the IPB approach.
 They employ a many-to-many algorithm.
 Computing the UBS has been studied before in the context of alternative route algorithms~\cite{adgw-arrn-13}.
 There, the authors state that it would be ideal to check the UBS in time proportional to the length of the path and a few shortest path queries.
 % Due to the lack of such an option they resort to approximations.
-Here, we introduce an algorithm, which achieves this when possible.
-We also prove that this is not always possible by constructing a worst-case where each subpath has a distinct stretch value.
+Here, we introduce an algorithm which achieves this when possible.
+We also prove that this is not always possible by constructing a worst-case example where each subpath has a distinct stretch value.
 
 Consider a path $P=(s=v_1,\dots,t=v_k)$ as depicted in Figure~\ref{fig:ubs_tree}.
 Our algorithm works iteratively.
-We start with the full path and successively chop of parts at the beginning and the end of the path until the path is empty or only a shortest path remains.
+We start with the full path and successively remove prefixes and suffixes until the path is empty or only a shortest path remains.
 We start by computing shortest distances from $s$ to all nodes on the path.
-This can be done with a single run of Dijkstra's algorithm which can terminate once all $v_i$ were settled.
+This can be done with a single run of Dijkstra's algorithm which can terminate once all $v_i$ have been settled.
 Beside the shortest distances, this yields a shortest path tree represented though parent pointers.
 We also run Dijkstra's algorithm from $t$ on the reversed graph which yields a backward shortest path tree to $t$.
 Now we find the greatest index $i$ such that $P_{1,i}$ is a prefix of all shortest paths $\shp(s, v_l)$ where $i < l \leq k$, i.e. the first branching node in the forward shortest path tree.
@@ -552,10 +551,12 @@ We can stop when $i+1 \geq j-1$ or when the whole considered path is a shortest 
 
 % filtering covered
 
+This algorithm can be adopted to efficiently compute other path quality measures such as the \emph{local optimality}~\cite{adgw-arrn-13}.
+
 \subsubsection{Worst-Case Running Time}
 
 This algorithm performs great when large segments are shortest paths, which will of course often be the case when searching shortest smooth paths.
-In the worst case however, it still has to check $\mathcal{O}(n^2)$ subpath stretches.
+In the worst case however, it still has to check $\Theta(n^2)$ subpath stretches.
 Consider a complete graph with unit weights and the path $P=(v_1, \dots, v_n)$.
 In this graph the shortest path between any two nodes is always the direct arc and the distance is always exactly one.
 Thus, the shortest path tree from any node is just a star with the direct arcs and our algorithm can only advance by a single node in each iteration.
@@ -564,8 +565,8 @@ This results in a worst case running time of $n$ runs of Dijkstra's algorithm.
 We suspect that it is not possible to compute the UBS asymptotically faster.
 Consider the same graph as before but with weights of unique powers of two for the arcs of the path.
 Now any subpath has a unique length.
-As all subpaths of three or more nodes still have a shortest distance of one between their endpoints, we have $\mathcal{O}(n^2)$ unique stretch values.
-Thus, computing the UBS of the whole path without checking all $\mathcal{O}(n^2)$ stretch values should be difficult if not impossible.
+As all subpaths of three or more nodes still have a shortest distance of one between their endpoints, we have $\Theta(n^2)$ unique stretch values.
+Thus, computing the UBS of the whole path without checking all $\Theta(n^2)$ stretch values should be difficult if not impossible.
 
 \subsubsection{Lazy RPHAST with Path Unpacking}
 \label{sec:lazy_rphast_path}
@@ -596,28 +597,27 @@ Thus, computing the UBS of the whole path without checking all $\mathcal{O}(n^2)
 \label{algo:lazy_rphast_path}
 \end{algorithm2e}
 
-While this algorithm typically needs only few stretch checks, running Dijkstra's algorithm a couple of times is still prohibitively slow on large road networks.
+While this algorithm typically needs few stretch checks, running Dijkstra's algorithm a couple of times is still prohibitively slow on large road networks.
 Luckily, we can speed these computations up drastically by employing Lazy RPHAST, which we already used as a A* heuristic in the shortest path search phase.
 Recall that Lazy RPHAST allows us to select one target node and then to compute shortest distances quickly from many nodes to this target.
 For the efficient UBS computation, we use two instantiations of this algorithm.
-In each iteration, we select both endpoints of the considered path and compute distances to the endpoints for all nodes on the path.
+In each iteration, we select both endpoints of the considered path and compute distances from and to the endpoints for all nodes on the path.
 However, we also need the shortest path trees.
 We propose an extension to Lazy RPHAST to incrementally compute shortest path trees.
-Algorithm~\ref{algo:lazy_rphast_path} depicts this routine.
 
-Parent pointers were already maintained throughout the execution of Algorithm~\ref{algo:lazy_rphast}.
-Thus, after having called \texttt{ComputeAndMemoizeDist}, we already have the shortest path through the CH search space.
-Algorithm~\ref{algo:lazy_rphast_path} recursively unpacks this path to the full shortest path in the original graph.
+We extend the original Lazy RPHAST algorithm~\ref{algo:lazy_rphast} by additionally storing parent pointers for path unpacking similar to Dijkstra's algorithm.
+Thus, after having called \texttt{ComputeAndMemoizeDist}, we have the shortest path through the CH search space.
+Algorithm~\ref{algo:lazy_rphast_path} depicts the routine to efficiently unpack shortcuts on this path and retrieve full shortest path trees in the original graph.
 We use a bitvector $\mathtt{U}$ to mark nodes for which the shortest path has already been fully unpacked which is checked before any actual work is performed.
-Then, we call \texttt{ComputeAndMemoizeDist} to ensure that the path through the CH search space has been obtained.
-This might have not happened before for nodes we encounter through shortcut unpacking.
+Then, we have to call \texttt{ComputeAndMemoizeDist} to ensure that the path through the CH search space has been obtained for $u$.
+For nodes encountered through recursive shortcut unpacking this might have not happened before.
 In the next step, we can now recursively unpack the full path up to the parent $\mathtt{P}[u]$ of our current node $u$.
 Now, all that remains is to unpack the arc $(u, \mathtt{P}[u])$ if it is a shortcut.
 If so, the middle node $v$ is set in $\mathtt{P}$ as the node between $u$ and $\mathtt{P}[u]$ and \texttt{Unpack} is invoked recursively first for $v$ and then again for $u$ to unpack the arcs $(v, \mathtt{P}[v])$ and $(u,v)$.
 
 \subsection{Iterative Path Fixing}
 
-With an efficient algorithm to find UBS violating segments we can introduce another natural heuristic to find short smooth paths:
+With an efficient algorithm to find UBS-violating segments we can introduce another natural heuristic to find short smooth paths:
 Find the shortest path with respect to $w^*$ and replace all UBS violating subpaths $(v_i,\dots,v_j)$ with $\shp_w(v_i, v_j)$.
 The result may still contain UBS violating subpaths.
 In this case, we iteratively continue to replace violating segments.
@@ -646,7 +646,7 @@ The DIMACs Europe instance was made available by PTV\footnote{\url{https://ptvgr
 It is not publicly available but can be obtained on request for research purposes\footnote{\url{https://i11www.iti.kit.edu/resources/roadgraphs.php}}.
 We derived the OSM Germany instance from an early 2020 snapshot of OpenStreetMap and converted into a routing graph using RoutingKit\footnote{\url{https://github.com/RoutingKit/RoutingKit}}.
 For this instance, we have proprietary traffic data provided by Mapbox\footnote{\url{https://mapbox.com}} which, unfortunately, we cannot provide.
-The data includes a two live traffic snapshots in the form of OSM node pairs and live speeds for the edge between the nodes.
+The data includes two live traffic snapshots in the form of OSM node pairs and live speeds for the edge between the nodes.
 One is from Friday 2019/08/02 afternoon and contains 320K node pairs and the other from Tuesday 2019/07/16 morning and contains 185K pairs.
 For the Europe instances, we do not have any real world traffic data.
 Thus, we resort to the approach suggested in~\cite{dss-tarrn-18} and generate synthetic live traffic:
@@ -664,14 +664,14 @@ In addition we generate a \emph{4h} batch for medium-range queries with the same
 
 Preliminary experiments showed that some queries take prohibitively long to answer exactly.
 Since we are solving an $\mathcal{NP}$-hard problem, this is not surprising.
-We abort queries if the algorithm after 10 seconds does not have found a path with $\ubs < (1+\epsilon)$.
+We abort queries if the algorithm has not found a path with $\ubs < (1+\epsilon)$ after 10 seconds.
 We report these queries as failed but, nevertheless, do include their running times in our measurements.
 
 \begin{figure}
 \centering
 \includegraphics[width=\linewidth]{fig/ubs_perf.pdf}
 \caption{
-Running times of different UBS checking algorithms for paths encountered by IDB when answering queries of different ranks with $\epsilon = 0.2$ on OSM Europe.
+Running times of different UBS checking algorithms for paths encountered by IPB-H when answering queries of different ranks with $\epsilon = 0.2$ on OSM Europe.
 The boxes cover the range between the first and third quartile.
 The band in the box indicates the median, the whiskers cover 1.5 times the interquartile range.
 All other running times are indicated as outliers.
@@ -679,31 +679,31 @@ All other running times are indicated as outliers.
 \end{figure}
 
 We start by evaluating different UBS algorithms in isolation.
-The paths checked by the UBS algorithms are the paths we find while performing IDB to find shortest smooth paths with $\epsilon = 0.2$ on the Dijkstra rank queries.
+The paths checked by the UBS algorithms are the paths we find while performing IPB-H to find shortest smooth paths with $\epsilon = 0.2$ on the Dijkstra rank queries.
 We limit the time per rank and UBS algorithm to one hour.
 Thus, slow algorithms may not get to check all paths.
 Our baseline is computing all distances between pairs of path nodes at once with \emph{SSE RPHAST}~\cite{dgw-fbspr-11}, which to the best of our knowledge is the fastest known many-to-many algorithm.
-The second algorithm, denoted as~\emph{Lazy RPHAST Naive} uses Lazy RPHAST to compute distances between all pairs of path nodes.
-Third is \emph{UBS Trees Dijkstra} which is the non-accelerated, i.e. Dijkstra-based, implementation of the efficient UBS computation introduced in Section~\ref{sec:ubs_tree}.
+The second algorithm, denoted as~\emph{Lazy RPHAST Naive}, uses Lazy RPHAST to compute distances between all pairs of path nodes.
+The third one is \emph{UBS Trees Dijkstra} which is the non-accelerated, i.e. Dijkstra-based, implementation of the efficient UBS computation introduced in Section~\ref{sec:ubs_tree}.
 \emph{UBS Trees Lazy RPHAST} denotes the accelerated variant of this algorithm utilizing Lazy RPHAST as described in Section~\ref{sec:lazy_rphast_path}.
 
 Figure~\ref{fig:ubs_perf} depicts the results of our experiment.
-We observe that SSE RPHAST is consequently faster than the naive Lazy RPHAST variant by a roughly constant factor.
+We observe that SSE RPHAST is consistently faster than the naive Lazy RPHAST variant by a roughly constant factor.
 SSE RPHAST was designed as a many-to-many algorithm and is thus more efficient than naively applying a many-to-one algorithm $|P|$ times.
 The non-accelerated UBS Trees algorithm is very fast for short paths but quickly becomes prohibitively slow for longer paths.
 Running Dijkstra's algorithm will traverse a large part of the network if source and target are sufficiently far apart from each other.
 Doing this multiple times is not feasible.
 However, the accelerated variant beats SSE RPHAST by about two orders of magnitude across all path lengths.
 UBS Trees running times have significantly greater variance than the many-to-many algorithms.
-This is because the amount of work which UBS Trees can avoid by chopping of shortest path segments varies strongly between different paths.
-In contrast, the many-to-many based algorithms will always check $\mathcal{O}(|P|^2)$ subpath distances.
+This is because the amount of work which UBS Trees can avoid varies strongly between different paths.
+In contrast, the many-to-many-based algorithms will always check $\mathcal{O}(|P|^2)$ subpath distances.
 Note that the UBS Trees Dijkstra outliers disappear because we limit the time per rank and algorithm.
-If we would check all paths, the outliers would be present too, but the experiment would take prohibitively long.
+If we checked all paths, the outliers would be present too, but the experiment would take prohibitively long.
 
 \begin{table}
 \centering
 \caption{
-Average performance of our implementations of IPB, IDB and IPF for different query sets on all instances with $\epsilon = 0.2$.
+Average performance of our implementations of IPB-E, IPB-H and IPF for different query sets on all instances with $\epsilon = 0.2$.
 The Increase column denotes the length increase with respect to $w^*$ of the obtained path over $\shp_{w^*}$ and includes only successful queries.
 The running time column also includes the running time of queries aborted after 10 seconds.
 }\label{tab:data}
@@ -715,13 +715,13 @@ Table~\ref{tab:data} depicts the results.
 Both the query set and the instance have a strong influence on the running time.
 Note that random queries on OSM Germany are on average shorter than four hours which is the reason why the running times on OSM Germany for random queries are faster than for 4h queries.
 The length increase of the solutions primarily depends on the instance and less on the query set.
-The synthetic traffic affects DIMACS Europe stronger than OSM Europe.
+The synthetic traffic affects DIMACS Europe more strongly than OSM Europe.
 We suspect that this is because OSM is modeled in much greater detail and contains more shorter arcs. % which when jammed have less influence when jammed as a single long arc.
-In terms of running time, IDB is significantly faster than IPB and IPF is significantly faster still, which is roughly what we expected.
-Conversely, the heuristics find somewhat longer paths than the exact IPB algorithm and IPF appears to find worse paths than IDB.
-However, one has to be careful interpreting these numbers as a non-negligible amount of queries did not terminate with IPB and IDB.
+In terms of running time, IPB-H is significantly faster than IPB-E and IPF is significantly faster still, which is roughly what we expected.
+Conversely, the heuristics find somewhat longer paths than the exact IPB-E algorithm and IPF appears to find worse paths than IPB-H.
+However, one has to be careful interpreting these numbers as a non-negligible amount of queries did not terminate with IPB-E and IPB-H.
 Because the length increase numbers are averages over different sets, it is not immediately clear if the differences appear because the heuristics find worse paths or because the heuristics find long solutions where the exact algorithm did not finish within 10 seconds.
-% When limiting the evaluation to queries where all algorithms finished successfully, the difference between IDB and IPB almost disappears.
+% When limiting the evaluation to queries where all algorithms finished successfully, the difference between IPB-H and IPB-E almost disappears.
 % The gap to IPF also becomes smaller but remains significant.
 For running times, the averages are also difficult to interpret.
 They are heavily skewed by outliers and there is little reason to assume that they would be normally distributed.
@@ -737,54 +737,54 @@ Relative performance profiles of our algorithms on all queries from Table~\ref{t
 \end{figure}
 
 Figure~\ref{fig:perf_profile} depicts performance profiles~\cite{dolan2002benchmarking} for running time and found path length of all queries from Table~\ref{tab:data} combined.
-Investigating queries across all instances combined is reasonable because we study the relative performance of the different algorithms.
+Investigating queries across all instances combined is reasonable because we study the relative performance of the different algorithms on each query.
 Let $\mathcal{A}$ be the set of algorithms, $\mathcal{Q}$ the set of queries and $\operatorname{obj}(a, q)$ denote the considered measurement from the computation of $a \in \mathcal{A}$ to answer $q \in \mathcal{Q}$.
-In our case that is either the running time or the length with respect to $w^*$ of the computed path.
-The performance ratio $r(a,q) = \frac{\operatorname{obj}(a, q)}{\min{\operatorname{obj}(a', q) \mid a' \in \mathcal{A}}}$ indicates by what factor $a$ deviates from the best solution or the shortest running time for the query $q$.
+In our case, this is either the running time or the length with respect to $w^*$ of the computed path.
+The performance ratio $r(a,q) = \frac{\operatorname{obj}(a, q)}{\min{\{\operatorname{obj}(a', q) \mid a' \in \mathcal{A}\}}}$ indicates by what factor $a$ deviates from the best solution or the shortest running time for the query $q$.
 The performance profile $\rho_a : [1,\infty) \to [0,1], \tau \mapsto \frac{|\{q \in \mathcal{Q} | r(a, q) \leq \tau \}|}{|\mathcal{Q}|}$ of $a$ is the fraction of queries for which $a$ is within a factor of $\tau$ of the best measurement.
-For computations that were aborted after 10 seconds $\operatorname{obj}(a, q) = \infty$.
+For computations that were aborted after 10 seconds, $\operatorname{obj}(a, q) = \infty$.
 For the sake of completeness, we also include the same performance profiles separated per instance and query set in the appendix (see Figure~\ref{fig:perf_profile_time} and \ref{fig:perf_profile_quality}).
 However, discussing the results in such detail is beyond the scope of this paper.
 
 The running time performance profile in Figure~\ref{fig:perf_profile} allows for some more nuanced observations:
 IPF is the fastest algorithm on about 65\% of the queries and almost never more than 10 times slower than the fastest one.
-Surprisingly, IDB is also sometimes the fastest to answer a query (in 35\% of the queries) but it may also be up to 300 times slower than the fastest algorithm.
+Surprisingly, IPB-H is also sometimes the fastest to answer a query (in 35\% of the queries) but it may also be up to 300 times slower than the fastest algorithm.
 However, for 83\% of all queries it stays within a factor of 10.
-IDB fastest on 35\% and 83\% within factor 10.
+IPB-H fastest on 35\% and 83\% within factor 10.
 The exact algorithm is never the fastest but still within a factor of 10 for 65\% of the queries.
 It still may be several thousand times slower than the fastest algorithm in extreme cases, even with the running time limited to 10 seconds.
 
 The path length performance profile also yields useful insights.
-Since IPB is an exact algorithm its performance profile contains only a single datapoint, i.e. for all queries which terminated successfully IPB finds the shortest path.
-The line for IDB is almost constant.
-That means, there are only few queries where it does not find the best solution.
+Since IPB-E is an exact algorithm, its performance profile contains only a single datapoint, i.e. for all queries which terminated successfully IPB-E finds the shortest path.
+The line for IPB-H is almost constant.
+This means, there are only few queries where it does not find the best solution.
 Even when it does not find the best solution, it is close to the best one, i.e. the maximum length increase factor over the best solution is 1.36 and all other values are below 1.1.
-It is quite possible that IDB found the optimal solution even for some of the queries where IPB did not terminate.
-The qualitative performance of IPF varies stronger.
+It is quite possible that IPB-H found the optimal solution even for some of the queries where IPB-E did not terminate.
+The qualitative performance of IPF varies more strongly.
 It also finds the best solution on 85\% of the queries.
-More than 99\% of the obtained solutions are within factor 1.2 to the best found.
+More than 99\% of the obtained solutions are within a factor of 1.2 to the best found.
 In the worst case IPF found a path 1.96 times the length of the best one found by another algorithm.
 
 In combination with the averages reported in Table~\ref{tab:data} we can now draw solid conclusions on the performance of the algorithms.
 IPF is the algorithm with the most stable running time.
-Even though it is not always the fastest it is never much slower than any other algorithm.
+Even though it is not always the fastest, it is never much slower than any other algorithm.
 It is the only algorithm able to answer all queries in less than 10 seconds.
-In fact, it usually needs only few milliseconds and only up to a couple of hundreds of milliseconds for extreme cases.
-It pays for this with solution quality but is still very close for the vast majority of queries.
+In fact, it usually needs only a few milliseconds and only up to several hundreds of milliseconds for extreme cases.
+It sometimes pays for this with worse solution quality but is still very close to the best found for the vast majority of queries.
 This makes it an algorithm suitable for practical applications.
-IDB is also a very effective heuristic.
+IPB-H is also a very effective heuristic.
 It is drastically faster than the exact algorithm and sometimes even faster than IPF.
-Its performance in terms of quality is much more stable than IPF and usually IDB will find the best path or something very close to it.
-The difference in average length increase between IPB and IDB was not because IDB finds much worse paths but because it is able to answer queries which IPB cannot answer.
+Its performance in terms of quality is much more stable than IPF and usually IPB-H will find the best path or something very close to it.
+The difference in average length increase between IPB-E and IPB-H was not because IPB-H finds much worse paths but because it is able to answer queries which IPB-E cannot answer.
 However, it still fails to answer about 5\% of all queries in less than 10 seconds.
-The running time of IPB varies even stronger.
-On the one hand, many easy queries can be answered in few milliseconds but on the other hand, 25\% of all queries can not be answered in less than 10 seconds.
-The feasibility of solving the problem to exactness with IPB strongly depends on the distance of queries and on the smoothness of the $w^*$ metric.
+The running time of IPB-E varies even more strongly.
+On the one hand, many easy queries can be answered in a few milliseconds, but on the other hand, 25\% of all queries cannot be answered in less than 10 seconds.
+The feasibility of solving the problem to exactness with IPB-E strongly depends on the distance of queries and on the smoothness of the $w^*$ metric.
 
 \begin{table}[t]
 \centering
 \caption{
-Average performance of our implementations of IPB, IDB and IPF for different values of $\epsilon$ with 1h queries on OSM Europe with synthetic live traffic.
+Average performance of our implementations of IPB-E, IPB-H and IPF for different values of $\epsilon$ with 1h queries on OSM Europe with synthetic live traffic.
 The Increase column denotes the length increase with respect to $w^*$ of the shortest smooth path over the shortest $w^*$ path.
 It includes only values from successful queries.
 All other columns indicate average values over all queries, including the ones terminated after 10 seconds.
@@ -792,24 +792,24 @@ All other columns indicate average values over all queries, including the ones t
 \input{table/epsilon.tex}
 \end{table}
 
-For our final experiment, we evaluate the performance of our algorithms with different choices for $\epsilon$ with 1000 1h queries on OSM Europe.
+For our final experiment, we evaluate the performance of our algorithms with different choices for $\epsilon$ with 1000 queries of 1h range on OSM Europe.
 Table~\ref{tab:epsilon} depicts the results.
 This experiment was also performed in~\cite{dss-tarrn-18} but with only 100 queries.
 Given the observation from the previous experiment, it should be clear that reported averages allow only for very rough comparisons.
 However, it is the only data available to compare against related work.
 Also note that due to the presence of heavy outliers, performing too few queries can distort the numbers drastically.
-For example, when we ran the same experiment with only 100 queries, the average running times of IDB were an order of magnitude faster.
+For example, when we ran the same experiment with only 100 queries, the average running times of IPB-H were an order of magnitude faster.
 
 We observe similar trends as Delling et al.
-The smaller $\epsilon$, the harder the problem becomes.
+The smaller the choice of $\epsilon$, the harder the problem becomes.
 Consequently, the length increase, the number of iterations, the number of blocked paths and the running time increase.
-However, for our implementation of IDB, we measure slightly bigger path increases and slightly more iterations.
-Our implementation of IDB achieves running times two orders of magnitude faster than the CRP-based IDB implementation in~\cite{dss-tarrn-18}.
+However, for our implementation of IPB-H, we measure slightly bigger path increases and slightly more iterations.
+Our implementation of IPB-H achieves running times two orders of magnitude faster than the CRP-based IPB-H implementation in~\cite{dss-tarrn-18}.
 One reason for this is our new UBS algorithm which only needs a couple of milliseconds across all values of $\epsilon$.
 In~\cite{dss-tarrn-18}, the UBS checking phase takes between 1.3 and 1.9 \emph{seconds}.
 The CH-Potentials based shortest path finding phase is also very efficient across the entire range of $\epsilon$ values.
 Even with many blocked paths, the path lengths increase only little and the CH-Potentials heuristic remains very tight and yields good speed-ups.
-With that, even our exact IPB algorithm is still an order of magnitude faster than the IDB implementation in~\cite{dss-tarrn-18}.
+Our exact IPB-E algorithm is still an order of magnitude faster than the IPB-H implementation in~\cite{dss-tarrn-18}.
 
 \section{Conclusion}
 
@@ -819,16 +819,16 @@ This algorithm can compute the exact UBS of typically occurring paths with very 
 It outperforms state-of-the-art exact UBS algorithms by around two orders of magnitude and makes computing exact UBS values feasible in practice.
 Also, it can be used for other path quality measures such as local optimality.
 
-We also adapted the existing IDB algorithm and realized it with our new UBS algorithm and A* with CH-Potentials.
-This realization of IDB outperforms the original implementation by two orders of magnitude.
+We also adapted the existing IPB-H algorithm and realized it with our new UBS algorithm and A* with CH-Potentials.
+This realization of IPB-H outperforms the original implementation by two orders of magnitude.
 Also, we present necessary modifications to make the algorithm exact.
 Our exact version is still about an order of magnitude than the CRP-based heuristic implementation.
-As IDB and IPB are not always able to find solutions in reasonable time, we introduce another heuristic, IPF.
+As IPB-H and IPB-E are not always able to find solutions in reasonable time, we introduce another heuristic, IPF.
 IPF can consistently find smooth paths even for random queries on massive continental sized instances in a few tenths of milliseconds.
 
-For future work we would like to apply our algorithms not only to life traffic but also to predicted traffic, i.e. find smooth paths in a time-dependent setting.
-Further, we it would be interesting to study what causes IDB to be so much faster than IPB while retaining most of the quality.
-This could possibly be traced to specific structures in road networks which then in turn could be exploited to speed up IPB.
+For future work we would like to apply our algorithms not only to live traffic but also to predicted traffic, i.e. find smooth paths in a time-dependent setting.
+Further, it would be interesting to study what causes IPB-H to be so much faster than IPB-E while retaining most of the quality.
+Maybe this could be traced to specific structures in road networks which then in turn could be exploited to speed up IPB-E.
 % work around performance problems (circles, expontial number of forb paths - forbid corridors)
 
 % \section{Typesetting instructions -- Summary}
