@@ -338,12 +338,13 @@ Determining the path weight in $w^*$ takes running time linear in $\mathcal{O}(|
 To check the UBS, shortest distances have to be computed for all $\mathcal{O}(|P|^2)$ subpaths.
 This shows that \textsc{ShortestSmoothPath-Dec} $\in \mathcal{NP}$.
 
-To prove the hardness, we give a reduction from the strongly $\mathcal{NP}$-complete \textsc{HamiltonPath} problem. % TODO cite completeness
+To prove the hardness, we give a reduction from the strongly $\mathcal{NP}$-complete \textsc{HamiltonPath} problem~\cite{gj-ci-79}.
 The goal is to find a \emph{Hamiltonian} path, i.e. a simple path which traverses every vertex exactly once.
 Let $G=(V,A)$ be the \textsc{HamiltonPath} instance.
-To distinguish them from the vertices in the SSPP instance, we will denote the vertices in $V$ as \emph{nodes}.
-We construct our SSPP instance by replicating the nodes of $G$ into $n$ layers and two additional vertices $s$ and $t$.
-We connect successive layers with the original arcs and additional arcs between vertices corresponding to the same node.
+To distinguish them from the vertices in the SSPP instance, we will denote the vertices in the \textsc{HamiltonPath} instance as \emph{nodes}.
+We construct the vertices of our SSPP instance by copying each node $|V|$ times (forming $|V|$ layers) and creating two additional vertices $s$ and $t$.
+Arcs only connect successive layers.
+There are arcs between vertices corresponding to the same node and arcs corresponding to arcs from the \textsc{HamiltonPath} instance.
 Any $(s,\dots,t)$ path has exactly $|V|+1$ arcs and has to traverse all layers.
 We will choose the arc weights in such a way that the shortest $\epsilon$-smooth path between $s$ and $t$ has to use a different node in each layer.
 Paths using the same node in different layers will always be non-$\epsilon$-smooth in $w$ or too long in $w^*$.
@@ -351,9 +352,9 @@ Paths using the same node in different layers will always be non-$\epsilon$-smoo
 Formally, we construct the graph $G'=(V',A')$ for our SSPP instance as follows:
 We set the vertices $V' = \{ v^i \mid v \in V, i \in [1,n] \} \cup \{s,t\}$.
 The arc set $A'$ is the union of three groups of arcs $A_{\operatorname{orig}}$, $A_{\operatorname{self}}$ and $A_{\operatorname{terminal}}$ where $A_{\operatorname{orig}} = \{ (u^i, v^{i+1}) \mid uv \in A, 1 \leq i < n \}$ are the arcs between the layers corresponding to arcs in the \textsc{HamiltonPath} instance, $A_{\operatorname{self}} = \{ (v^i, v^{i+1}) \mid v \in V, 1 \leq i < n \}$ are the additional arcs between the same nodes in successive layers and $A_{\operatorname{terminal}} = \{ (s, v^1) \mid v \in V \} \cup \{ (v^n, t) \mid v \in V \}$ are the arcs connecting the terminals with the first and last layer.
-In both weight functions, all arcs in $A_{\operatorname{terminal}}$ get the weight 1.
-The arcs in $A_{\operatorname{self}}$ get a volatile weight of 2 and a smooth weight of 1.
-The arcs in $A_{\operatorname{orig}}$ get a volatile weight of 1 and a smooth weight of $1+\epsilon$.
+In both weight functions, all arcs $a_{\operatorname{term}} \in A_{\operatorname{terminal}}$ get the weight $w(a_{\operatorname{term}}) = w^*(a_{\operatorname{term}}) = 1$.
+The arcs in $a_{\operatorname{self}} \in A_{\operatorname{self}}$ get a smooth weight $w(a_{\operatorname{self}}) = 1$ and a volatile weight $w^*(a_{\operatorname{self}}) = 2$.
+The arcs in $a_{\operatorname{orig}} \in A_{\operatorname{orig}}$ get a smooth weight $w(a_{\operatorname{orig}}) = 1+\epsilon$ and a volatile weight $w^*(a_{\operatorname{orig}}) = 1$.
 Setting $k=|V|+1$, this forms our \textsc{ShortestSmoothPath-Dec} instance.
 This transformation has quadratic running time.
 See Figure~\ref{fig:transformation} for an illustrated example of the construction.
