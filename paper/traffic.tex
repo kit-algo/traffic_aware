@@ -133,7 +133,7 @@ By introducing an offline preprocessing phase where auxiliary data is precompute
 For an extensive overview on these speed-up techniques, we refer to~\cite{bdgmpsww-rptn-16}.
 One particularly popular technique which we also utilize in this work is Contraction Hierarchies (CH)~\cite{gssv-erlrn-12}.
 During preprocessing, additional shortcut arcs are inserted into the graph, which skip over unimportant vertices.
-On continental-sized road networks with tens of millions of nodes and edges, this preprocessing typically takes a few minutes.
+On continental-sized road networks with tens of millions of vertices and edges, this preprocessing typically takes a few minutes.
 Shortest path queries can be answered in less than a millisecond.
 Applying CH to extended problem models is not trivially possible.
 We therefore utilize the easier to extend classical A* algorithm~\cite{hnr-afbhd-68} with CH-Potentials, a CH-based heuristic~\cite{strasser_et_al:LIPIcs.SEA.2021.6}.
@@ -169,26 +169,26 @@ In Section~\ref{sec:eval}, we present a thorough evaluation of our algorithms.
 \section{Preliminaries}
 \label{sec:prelim}
 
-Let $G=(V,A)$ be a directed graph with $n = |V|$ nodes and $m = |A|$ arcs.
+Let $G=(V,A)$ be a directed graph with $n = |V|$ vertices and $m = |A|$ arcs.
 We use $uv$ as a short notation for arcs.
 A weight function $w : A \to \mathbb{N}$ maps arcs to positive integers.
 The \emph{reversed} graph $\overleftarrow{G} := (V, \{ vu \mid uv \in A \})$ contains all arcs in reverse direction.
 The corresponding reversed weight function is $\overleftarrow{w}(vu) := w(uv)$.
-A sequence of nodes $P = (v_1, \dots, v_k)$ where $v_i v_{i+1} \in A$ is called a \emph{path}.
+A sequence of vertices $P = (v_1, \dots, v_k)$ where $v_i v_{i+1} \in A$ is called a \emph{path}.
 We denote by $P_{i,j} = (v_i, \dots, v_j), 0 \leq i < j \leq k$ a \emph{subpath} of $P$.
 The length of a path with respect to a weight function $w$ is denoted by $w(P) = \sum w(v_i v_{i+1})$.
-We refer to a shortest path between two nodes $s$ and $t$ by $\shp_w(s,t)$ and call its length the \emph{distance} $\dist_w(s,t)$ between $s$ and $t$.
+We refer to a shortest path between two vertices $s$ and $t$ by $\shp_w(s,t)$ and call its length the \emph{distance} $\dist_w(s,t)$ between $s$ and $t$.
 
-Dijkstra's algorithm~\cite{d-ntpcg-59} computes $\dist_w(s,t)$ by traversing nodes by increasing distance from $s$ until $t$ is reached.
-Nodes are inserted into a priority queue when they are discovered.
-In each iteration the closest node $u$ is popped from the queue and \emph{settled}.
+Dijkstra's algorithm~\cite{d-ntpcg-59} computes $\dist_w(s,t)$ by traversing vertices by increasing distance from $s$ until $t$ is reached.
+Vertices are inserted into a priority queue when they are discovered.
+In each iteration the closest vertex $u$ is popped from the queue and \emph{settled}.
 Its distance is now final.
 Outgoing arcs $uv$ are \emph{relaxed}, i.e. the algorithm checks if the path from $s$ to $v$ via $u$ is shorter than any previously known distances from $s$ to $v$.
 If this is the case, $v$ will be inserted into the priority queue.
-To keep track of the best-known distances, the algorithm maintains for each node $v$ a tentative distance $\mathtt{D}[v]$.
-By storing the predecessor node on the shortest path from $s$ to $v$ in a parent array $\mathtt{P}[v]$, shortest paths can be efficiently reconstructed.
-By construction, Dijkstra's algorithm visits all nodes closer to $s$ than the target.
-The visited nodes are sometimes called the \emph{search space}.
+To keep track of the best-known distances, the algorithm maintains for each vertex $v$ a tentative distance $\mathtt{D}[v]$.
+By storing the predecessor vertex on the shortest path from $s$ to $v$ in a parent array $\mathtt{P}[v]$, shortest paths can be efficiently reconstructed.
+By construction, Dijkstra's algorithm visits all vertices closer to $s$ than the target.
+The visited vertices are sometimes called the \emph{search space}.
 It can be reduced with the A* algorithm~\cite{hnr-afbhd-68} by guiding the search towards the target.
 Here, the queue is ordered by $\mathtt{D}[v] + h_t(v)$ where $h_t$ is a \emph{heuristic} which estimates a lower bound of $\dist(v,t)$.
 
@@ -197,22 +197,22 @@ Here, the queue is ordered by $\mathtt{D}[v] + h_t(v)$ where $h_t$ is a \emph{he
 Contraction Hierarchies (CH) is a two-phase speed-up technique to accelerate shortest path computations on road networks through precomputation.
 For a detailed discussion we refer to~\cite{gssv-erlrn-12}.
 Here, we only briefly introduce necessary notation and algorithms used in this paper.
-In a preprocessing phase, nodes are ordered totally by ``importance'' where more important nodes should lie on more shortest paths.
-Intuitively, nodes on highways are more important than nodes on some rural street.
+In a preprocessing phase, vertices are ordered totally by ``importance'' where more important vertices should lie on more shortest paths.
+Intuitively, vertices on highways are more important than vertices on some rural street.
 For CH, such an ordering is obtained heuristically.
-Then, all nodes are contracted successively by ascending importance.
-To \emph{contract} a node means to temporarily remove it from the graph while inserting \emph{shortcut arcs} between neighbors with higher rank to preserve shortest distances among them.
+Then, all vertices are contracted successively by ascending importance.
+To \emph{contract} a vertex means to temporarily remove it from the graph while inserting \emph{shortcut arcs} between neighbors with higher rank to preserve shortest distances among them.
 The result is an \emph{augmented graph} $G^+$ with original arcs and shortcuts.
 $G^+$ can be split into $\gchu$ and $G^{\downarrow}$ where $\gchu$ only contains arcs $uv$ where $u$ is less important than $v$ and $G^{\downarrow}$ vice versa.
-The augmented graph has the property that for any two nodes $s$ and $t$, there always exists an \emph{up-down} $st$-path of shortest distance which first only uses only arcs from $\gchu$ and then only arcs from $G^{\downarrow}$.
+The augmented graph has the property that for any two vertices $s$ and $t$, there always exists an \emph{up-down} $st$-path of shortest distance which first only uses only arcs from $\gchu$ and then only arcs from $G^{\downarrow}$.
 Such a path can be found by running Dijkstra's algorithm from $s$ on $\gchu$ and from $t$ on the reversed downward graph $\gchd$ graph.
 Reconstructing the full path without any shortcuts is possible by recursively unpacking shortcuts.
-For this, one can store for each shortcut the node which was contracted when the shortcut was inserted.
-The set of nodes reachable in $\gchu$ and $\gchd$ is called the \emph{CH search space} of a node.
+For this, one can store for each shortcut the vertex which was contracted when the shortcut was inserted.
+The set of vertices reachable in $\gchu$ and $\gchd$ is called the \emph{CH search space} of a vertex.
 
 \begin{algorithm2e}
 \KwData{$\mathtt{D}^{\downarrow}[u]$: tentative distance from $u$ to $t$ computed by Dijkstra's algorithm on $\gchd$}
-\KwData{$\mathtt{P}[u]$: parent node on the shortest path from $u$ to $t$, as computed Dijkstra's algorithm on $\gchd$}
+\KwData{$\mathtt{P}[u]$: parent vertex on the shortest path from $u$ to $t$, as computed Dijkstra's algorithm on $\gchd$}
 \KwData{$\mathtt{D}[u]$: memoized final distance from $u$ to $t$, initially $\bot$}
 \SetKwFunction{Dist}{ComputeAndMemoizeDist}
 \SetKwProg{Fn}{Function}{:}{}
@@ -229,7 +229,7 @@ The set of nodes reachable in $\gchu$ and $\gchd$ is called the \emph{CH search 
     }
     \Return{$\mathtt{D}[u]$}\;
 }
-\caption{Computing the distance from a single node $u$ to $t$ with Lazy RPHAST}
+\caption{Computing the distance from a single vertex $u$ to $t$ with Lazy RPHAST}
 \label{algo:lazy_rphast}
 \end{algorithm2e}
 
@@ -237,7 +237,7 @@ Lazy RPHAST~\cite{strasser_et_al:LIPIcs.SEA.2021.6} is a CH-based algorithm to q
 Lazy RPHAST starts by running Dijkstra's algorithm from $t$ on $\gchd$, similar to a standard CH query.
 The forward search space, however, is explored through a recursive DFS-like search while memoizing distances to $t$ as depicted in Algorithm~\ref{algo:lazy_rphast}.
 This allows reusing the already computed distances for following sources.
-Lazy RPHAST can be used analogously to compute distances from one node to many targets by swapping $\gchu$ and $\gchd$.
+Lazy RPHAST can be used analogously to compute distances from one vertex to many targets by swapping $\gchu$ and $\gchd$.
 We employ Lazy RPHAST as both a many-to-one algorithm and as an A* heuristic.
 Lazy RPHAST as a A* heuristic is called CH-Potentials~\cite{strasser_et_al:LIPIcs.SEA.2021.6}.
 
@@ -262,7 +262,7 @@ This is because the stretch of any subpath only decreases when appending optimal
 
 In~\cite{dss-tarrn-18}, Delling et al. introduce the shortest smooth path problem (SSPP).
 A path $P$ is $\epsilon$-smooth with regards to a metric $w$ when $\ubs_w(P) < 1 + \epsilon$.
-Given a graph $G$, nodes $s$ and $t$, a smooth weight function $w$ and a volatile weight function $w^*$ and a parameter $\epsilon > 0$, the shortest smooth path problem is to find the shortest path with respect to $w^*$ that is $\epsilon$-smooth with regards to $w$.
+Given a graph $G$, vertices $s$ and $t$, a smooth weight function $w$ and a volatile weight function $w^*$ and a parameter $\epsilon > 0$, the shortest smooth path problem is to find the shortest path with respect to $w^*$ that is $\epsilon$-smooth with regards to $w$.
 
 \section{Complexity}\label{sec:complexity}
 
@@ -339,18 +339,18 @@ To check the UBS, shortest distances have to be computed for all $\mathcal{O}(|P
 This shows that \textsc{ShortestSmoothPath-Dec} $\in \mathcal{NP}$.
 
 To prove the hardness, we give a reduction from the strongly $\mathcal{NP}$-complete \textsc{HamiltonPath} problem. % TODO cite completeness
-The goal is to find a \emph{Hamiltonian} path, i.e. a simple path which traverses every node exactly once.
+The goal is to find a \emph{Hamiltonian} path, i.e. a simple path which traverses every vertex exactly once.
 Let $G=(V,A)$ be the \textsc{HamiltonPath} instance.
-To distinguish them from the nodes in the SSPP instance, we will denote the nodes in $V$ as \emph{vertices}.
-We construct our SSPP instance by replicating the vertices of $G$ into $n$ layers and two additional nodes $s$ and $t$.
-We connect successive layers with the original arcs and additional arcs between nodes corresponding to the same vertex.
+To distinguish them from the vertices in the SSPP instance, we will denote the vertices in $V$ as \emph{nodes}.
+We construct our SSPP instance by replicating the nodes of $G$ into $n$ layers and two additional vertices $s$ and $t$.
+We connect successive layers with the original arcs and additional arcs between vertices corresponding to the same node.
 Any $(s,\dots,t)$ path has exactly $|V|+1$ arcs and has to traverse all layers.
-We will choose the arc weights in such a way that the shortest $\epsilon$-smooth path between $s$ and $t$ has to use a different vertex in each layer.
-Paths using the same vertex in different layers will always be non-$\epsilon$-smooth in $w$ or too long in $w^*$.
+We will choose the arc weights in such a way that the shortest $\epsilon$-smooth path between $s$ and $t$ has to use a different node in each layer.
+Paths using the same node in different layers will always be non-$\epsilon$-smooth in $w$ or too long in $w^*$.
 
 Formally, we construct the graph $G'=(V',A')$ for our SSPP instance as follows:
-We set the nodes $V' = \{ v^i \mid v \in V, i \in [1,n] \} \cup \{s,t\}$.
-The arc set $A'$ is the union of three groups of arcs $A_{\operatorname{orig}}$, $A_{\operatorname{self}}$ and $A_{\operatorname{terminal}}$ where $A_{\operatorname{orig}} = \{ (u^i, v^{i+1}) \mid uv \in A, 1 \leq i < n \}$ are the arcs between the layers corresponding to arcs in the \textsc{HamiltonPath} instance, $A_{\operatorname{self}} = \{ (v^i, v^{i+1}) \mid v \in V, 1 \leq i < n \}$ are the additional arcs between the same vertices in successive layers and $A_{\operatorname{terminal}} = \{ (s, v^1) \mid v \in V \} \cup \{ (v^n, t) \mid v \in V \}$ are the arcs connecting the terminals with the first and last layer.
+We set the vertices $V' = \{ v^i \mid v \in V, i \in [1,n] \} \cup \{s,t\}$.
+The arc set $A'$ is the union of three groups of arcs $A_{\operatorname{orig}}$, $A_{\operatorname{self}}$ and $A_{\operatorname{terminal}}$ where $A_{\operatorname{orig}} = \{ (u^i, v^{i+1}) \mid uv \in A, 1 \leq i < n \}$ are the arcs between the layers corresponding to arcs in the \textsc{HamiltonPath} instance, $A_{\operatorname{self}} = \{ (v^i, v^{i+1}) \mid v \in V, 1 \leq i < n \}$ are the additional arcs between the same nodes in successive layers and $A_{\operatorname{terminal}} = \{ (s, v^1) \mid v \in V \} \cup \{ (v^n, t) \mid v \in V \}$ are the arcs connecting the terminals with the first and last layer.
 In both weight functions, all arcs in $A_{\operatorname{terminal}}$ get the weight 1.
 The arcs in $A_{\operatorname{self}}$ get a volatile weight of 2 and a smooth weight of 1.
 The arcs in $A_{\operatorname{orig}}$ get a volatile weight of 1 and a smooth weight of $1+\epsilon$.
@@ -378,10 +378,10 @@ which proves that $P'$ is valid solution for the SSPP instance.
 
 Conversely, suppose that our SSPP instance has an $\epsilon$-smooth path $P' = (s, v_1^1, \dots, v_n^n, t)$ of weight $w^*(P') = |V|+1$.
 Such a path cannot contain any arcs from $A_{\operatorname{self}}$ because their volatile weight is 2.
-We now show that no two nodes in the path can correspond to the same vertex and thus that $P = (v_1, \dots, v_n)$ is indeed a Hamiltonian path in $G$.
+We now show that no two vertices in the path can correspond to the same node and thus that $P = (v_1, \dots, v_n)$ is indeed a Hamiltonian path in $G$.
 Suppose for contradiction that $P'_{i,j} = (v^i, \dots, v^j)$ was a subpath of $P'$.
 The length $w(P'_{i,j})$ is $(i-j) \cdot (1+\epsilon)$.
-Since start and end node correspond to the same vertex, the shortest path with respect to $w$ between these nodes is made up of arcs from $A_{\operatorname{self}}$ and has distance $\dist_w(v^i, v^j) = i-j$.
+Since start and end vertex correspond to the same node, the shortest path with respect to $w$ between these vertices is made up of arcs from $A_{\operatorname{self}}$ and has distance $\dist_w(v^i, v^j) = i-j$.
 Thus, $\ubs_w(P'_{i,j}) = (1+\epsilon)$ which means that this subpath must not be part of a solution for the SSPP instance.
 This is a contradiction.
 Thus, the SSPP solution induces a valid solution for the \textsc{HamiltonPath} instance.
@@ -441,13 +441,13 @@ Therefore, it is only a heuristic for the SSPP.
 
 To guarantee to find shortest smooth path with Dijkstra's algorithm, we need to adjust the notion of optimality used to compare labels.
 It might be necessary to keep a label with sub-optimal distance from the start as in the example from Figure~\ref{fig:ipb_counterexample} where the label for $(s,v)$ needs to be kept at $u$ despite being longer than $(s,u,v)$.
-This leads to a \emph{label-correcting} variation of Dijkstra's algorithm with the possibility for multiple labels per node.
-A \emph{label} $l$ at a node $v$ consists of a distance from the source $\mathtt{D}_l$, a set of active blocked paths $\mathtt{A}_l$, and a pointer to the parent node and label for efficient reconstruction of the path $P(l) = (s,\dots,v)$ represented by the label.
+This leads to a \emph{label-correcting} variation of Dijkstra's algorithm with the possibility for multiple labels per vertex.
+A \emph{label} $l$ at a vertex $v$ consists of a distance from the source $\mathtt{D}_l$, a set of active blocked paths $\mathtt{A}_l$, and a pointer to the parent vertex and label for efficient reconstruction of the path $P(l) = (s,\dots,v)$ represented by the label.
 The active blocked path set $\mathtt{A}_l$ contains all blocked paths which have a prefix which is a suffix of $P(l)$.
 A label $l$ can be discarded when $v$ has another label $l'$ with $\mathtt{D}_{l'} \leq \mathtt{D}_l$ and $\mathtt{A}_{l'} \subseteq \mathtt{A}_l$.
 
 The search is initialized with a single label at $s$ with distance zero and an empty set of active blocked paths.
-When a node $u$ with a label $l_u$ is popped from the queue and an arc $uv$ is relaxed, we create a new label $l_v$ as follows:
+When a vertex $u$ with a label $l_u$ is popped from the queue and an arc $uv$ is relaxed, we create a new label $l_v$ as follows:
 We set the distance $\mathtt{D}_{l_v} = \mathtt{D}_{l_u} + w^*(uv)$ and the parent label to $l_u$.
 We also need to keep track of traversed blocked paths.
 If $uv$ is the first arc of a blocked path $B = (u,v,\dots)$, the path $B$ needs to be added to $\mathtt{A}_{l_v}$.
@@ -458,11 +458,11 @@ If $uv$ is not on $B$, the blocked path is not in $\mathtt{A}_{l_v}$.
 An efficient implementation of this algorithm requires careful engineering.
 For each arc, we keep track of the blocked paths it lies on.
 Labels use a bitset to store the active blocked paths.
-The bitsets are limited to the paths relevant for the current node.
+The bitsets are limited to the paths relevant for the current vertex.
 This allows for efficient subset checks with bit-wise operations.
-Additionally, each node maintains its own queue of labels ordered by distance from $s$.
-When the node is popped from the queue, it pops the next label from its queue and propagates only this label.
-If there are any remaining labels in the queue, the node is reinserted into the global queue.
+Additionally, each vertex maintains its own queue of labels ordered by distance from $s$.
+When the vertex is popped from the queue, it pops the next label from its queue and propagates only this label.
+If there are any remaining labels in the queue, the vertex is reinserted into the global queue.
 Finally, we utilize A* with CCH-Potentials on the volatile metric to guide the search towards the target.
 As our experiments show, disallowing non $\epsilon$-smooth paths increase distances only very little.
 Thus, the heuristic is close to perfect and A* very effective for this problem.
@@ -510,7 +510,7 @@ Thus, the heuristic is close to perfect and A* very effective for this problem.
 \draw[->, dashed, red] (1) to [bend right=30] (2);
 \draw[->, dashed, red] (s) to [bend right=30] (1);
 \end{tikzpicture}
-\caption{Example path (solid, black) with shortest path tree from $v_1$ to all nodes on the path (dashed, blue) and reverse shortest path tree from all nodes on the path to $v_9$ (dashed, red).}
+\caption{Example path (solid, black) with shortest path tree from $v_1$ to all vertices on the path (dashed, blue) and reverse shortest path tree from all vertices on the path to $v_9$ (dashed, red).}
 \label{fig:ubs_tree}
 \end{figure}
 
@@ -525,17 +525,17 @@ We also prove that this is not always possible by constructing a worst-case exam
 Consider a path $P=(s=v_1,\dots,t=v_k)$ as depicted in Figure~\ref{fig:ubs_tree}.
 Our algorithm works iteratively.
 We start with the full path and successively remove prefixes and suffixes until the path is empty or only a shortest path remains.
-We start by computing shortest distances from $s$ to all nodes on the path.
+We start by computing shortest distances from $s$ to all vertices on the path.
 This can be done with a single run of Dijkstra's algorithm which can terminate once all $v_i$ have been settled.
 Beside the shortest distances, this yields a shortest path tree represented though parent pointers.
 We also run Dijkstra's algorithm from $t$ on the reversed graph which yields a backward shortest path tree to $t$.
-Now we find the greatest index $i$ such that $P_{1,i}$ is a prefix of all shortest paths $\shp(s, v_l)$ where $i < l \leq k$, i.e. the first branching node in the forward shortest path tree.
+Now we find the greatest index $i$ such that $P_{1,i}$ is a prefix of all shortest paths $\shp(s, v_l)$ where $i < l \leq k$, i.e. the first branching vertex in the forward shortest path tree.
 In the worst case this may be $s$.
 In the example in Figure~\ref{fig:ubs_tree} this is $v_3$.
-We analogously obtain the first branching node in the reverse shortest path tree to $v_k$ ($v_8$ in our example).
+We analogously obtain the first branching vertex in the reverse shortest path tree to $v_k$ ($v_8$ in our example).
 Stated formally, this is the smallest index $j$ such that $P_{j,k}$ is a suffix of all shortest paths $\shp(v_l, t)$ where $1 \leq l \leq j$.
 % how to find? early termination
-By Observation~\ref{obs:append_sp_ubs} subpaths starting from nodes in the segment $P_{1,i-1}$ and subpaths ending at nodes from $P_{j+1,k}$ are not relevant to the UBS computation.
+By Observation~\ref{obs:append_sp_ubs} subpaths starting from vertices in the segment $P_{1,i-1}$ and subpaths ending at vertices from $P_{j+1,k}$ are not relevant to the UBS computation.
 % Checking the stretch for subpaths $P_{j,l}$ where $j < i, i < l \leq k$ is not necessary.
 We exploit this and only check paths starting from $v_i$ or ending at $v_j$ in the current iteration.
 
@@ -558,21 +558,21 @@ This algorithm can be adopted to efficiently compute other path quality measures
 This algorithm performs great when large segments are shortest paths, which will of course often be the case when searching shortest smooth paths.
 In the worst case however, it still has to check $\Theta(n^2)$ subpath stretches.
 Consider a complete graph with unit weights and the path $P=(v_1, \dots, v_n)$.
-In this graph the shortest path between any two nodes is always the direct arc and the distance is always exactly one.
-Thus, the shortest path tree from any node is just a star with the direct arcs and our algorithm can only advance by a single node in each iteration.
+In this graph the shortest path between any two vertices is always the direct arc and the distance is always exactly one.
+Thus, the shortest path tree from any vertex is just a star with the direct arcs and our algorithm can only advance by a single vertex in each iteration.
 This results in a worst case running time of $n$ runs of Dijkstra's algorithm.
 
 We suspect that it is not possible to compute the UBS asymptotically faster.
 Consider the same graph as before but with weights of unique powers of two for the arcs of the path.
 Now any subpath has a unique length.
-As all subpaths of three or more nodes still have a shortest distance of one between their endpoints, we have $\Theta(n^2)$ unique stretch values.
+As all subpaths of three or more vertices still have a shortest distance of one between their endpoints, we have $\Theta(n^2)$ unique stretch values.
 Thus, computing the UBS of the whole path without checking all $\Theta(n^2)$ stretch values should be difficult if not impossible.
 
 \subsubsection{Lazy RPHAST with Path Unpacking}
 \label{sec:lazy_rphast_path}
 
 \begin{algorithm2e}[t]
-\KwData{$\mathtt{P}[u]$: parent node on the shortest path from $u$ to $t$, as computed by Algorithm~\ref{algo:lazy_rphast}}
+\KwData{$\mathtt{P}[u]$: parent vertex on the shortest path from $u$ to $t$, as computed by Algorithm~\ref{algo:lazy_rphast}}
 \KwData{$\mathtt{U}[u]$: whether the path from $u$ to $t$ has been fully unpacked}
 \SetKwFunction{Dist}{ComputeAndMemoizeDist}
 \SetKwFunction{Unpack}{Unpack}
@@ -599,21 +599,21 @@ Thus, computing the UBS of the whole path without checking all $\Theta(n^2)$ str
 
 While this algorithm typically needs few stretch checks, running Dijkstra's algorithm a couple of times is still prohibitively slow on large road networks.
 Luckily, we can speed these computations up drastically by employing Lazy RPHAST, which we already used as a A* heuristic in the shortest path search phase.
-Recall that Lazy RPHAST allows us to select one target node and then to compute shortest distances quickly from many nodes to this target.
+Recall that Lazy RPHAST allows us to select one target vertex and then to compute shortest distances quickly from many vertices to this target.
 For the efficient UBS computation, we use two instantiations of this algorithm.
-In each iteration, we select both endpoints of the considered path and compute distances from and to the endpoints for all nodes on the path.
+In each iteration, we select both endpoints of the considered path and compute distances from and to the endpoints for all vertices on the path.
 However, we also need the shortest path trees.
 We propose an extension to Lazy RPHAST to incrementally compute shortest path trees.
 
 We extend the original Lazy RPHAST algorithm~\ref{algo:lazy_rphast} by additionally storing parent pointers for path unpacking similar to Dijkstra's algorithm.
 Thus, after having called \texttt{ComputeAndMemoizeDist}, we have the shortest path through the CH search space.
 Algorithm~\ref{algo:lazy_rphast_path} depicts the routine to efficiently unpack shortcuts on this path and retrieve full shortest path trees in the original graph.
-We use a bitvector $\mathtt{U}$ to mark nodes for which the shortest path has already been fully unpacked which is checked before any actual work is performed.
+We use a bitvector $\mathtt{U}$ to mark vertices for which the shortest path has already been fully unpacked which is checked before any actual work is performed.
 Then, we have to call \texttt{ComputeAndMemoizeDist} to ensure that the path through the CH search space has been obtained for $u$.
-For nodes encountered through recursive shortcut unpacking this might have not happened before.
-In the next step, we can now recursively unpack the full path up to the parent $\mathtt{P}[u]$ of our current node $u$.
+For vertices encountered through recursive shortcut unpacking this might have not happened before.
+In the next step, we can now recursively unpack the full path up to the parent $\mathtt{P}[u]$ of our current vertex $u$.
 Now, all that remains is to unpack the arc $(u, \mathtt{P}[u])$ if it is a shortcut.
-If so, the middle node $v$ is set in $\mathtt{P}$ as the node between $u$ and $\mathtt{P}[u]$ and \texttt{Unpack} is invoked recursively first for $v$ and then again for $u$ to unpack the arcs $(v, \mathtt{P}[v])$ and $(u,v)$.
+If so, the middle vertex $v$ is set in $\mathtt{P}$ as the vertex between $u$ and $\mathtt{P}[u]$ and \texttt{Unpack} is invoked recursively first for $v$ and then again for $u$ to unpack the arcs $(v, \mathtt{P}[v])$ and $(u,v)$.
 
 \subsection{Iterative Path Fixing}
 
@@ -646,20 +646,20 @@ The DIMACs Europe instance was made available by PTV\footnote{\url{https://ptvgr
 It is not publicly available but can be obtained on request for research purposes\footnote{\url{https://i11www.iti.kit.edu/resources/roadgraphs.php}}.
 We derived the OSM Germany instance from an early 2020 snapshot of OpenStreetMap and converted into a routing graph using RoutingKit\footnote{\url{https://github.com/RoutingKit/RoutingKit}}.
 For this instance, we have proprietary traffic data provided by Mapbox\footnote{\url{https://mapbox.com}} which, unfortunately, we cannot provide.
-The data includes two live traffic snapshots in the form of OSM node pairs and live speeds for the edge between the nodes.
-One is from Friday 2019/08/02 afternoon and contains 320K node pairs and the other from Tuesday 2019/07/16 morning and contains 185K pairs.
+The data includes two live traffic snapshots in the form of OSM node id pairs and live speeds for the edge between the vertices.
+One is from Friday 2019/08/02 afternoon and contains 320K vertex pairs and the other from Tuesday 2019/07/16 morning and contains 185K pairs.
 For the Europe instances, we do not have any real world traffic data.
 Thus, we resort to the approach suggested in~\cite{dss-tarrn-18} and generate synthetic live traffic:
 For each road where the average speed is greater than 30\,kph, we reduce the speed to 5\,kph with a probability of 0.5\%.
 
 We evaluate our algorithms by performing batches of point-to-point shortest $\epsilon$-smooth path queries.
 As the distance between source and target has a significant influence on the performance, we generate different query batches.
-For each batch, we pick 1000 source nodes uniformly at random.
-We then run Dijkstra's algorithm from each source node on the graph with the smooth metric.
-Following the Dijkstra rank methodology, we store every $2^i$th settled node~\cite{ss-hhhes-05}.
+For each batch, we pick 1000 source vertices uniformly at random.
+We then run Dijkstra's algorithm from each source vertex on the graph with the smooth metric.
+Following the Dijkstra rank methodology, we store every $2^i$th settled vertex~\cite{ss-hhhes-05}.
 This allows evaluating the performance development against varying path lengths.
 In~\cite{adgw-arrn-13}, 1-hour queries were performed.
-For comparison, we also generate an \emph{1h} batch by picking the first settled node with a distance greater than one hour.
+For comparison, we also generate an \emph{1h} batch by picking the first settled vertex with a distance greater than one hour.
 In addition we generate a \emph{4h} batch for medium-range queries with the same method and a \emph{random} batch for long range queries where the target is picked uniformly at random.
 
 Preliminary experiments showed that some queries take prohibitively long to answer exactly.
@@ -682,8 +682,8 @@ We start by evaluating different UBS algorithms in isolation.
 The paths checked by the UBS algorithms are the paths we find while performing IPB-H to find shortest smooth paths with $\epsilon = 0.2$ on the Dijkstra rank queries.
 We limit the time per rank and UBS algorithm to one hour.
 Thus, slow algorithms may not get to check all paths.
-Our baseline is computing all distances between pairs of path nodes at once with \emph{SSE RPHAST}~\cite{dgw-fbspr-11}, which to the best of our knowledge is the fastest known many-to-many algorithm.
-The second algorithm, denoted as~\emph{Lazy RPHAST Naive}, uses Lazy RPHAST to compute distances between all pairs of path nodes.
+Our baseline is computing all distances between pairs of path vertices at once with \emph{SSE RPHAST}~\cite{dgw-fbspr-11}, which to the best of our knowledge is the fastest known many-to-many algorithm.
+The second algorithm, denoted as~\emph{Lazy RPHAST Naive}, uses Lazy RPHAST to compute distances between all pairs of path vertices.
 The third one is \emph{UBS Trees Dijkstra} which is the non-accelerated, i.e. Dijkstra-based, implementation of the efficient UBS computation introduced in Section~\ref{sec:ubs_tree}.
 \emph{UBS Trees Lazy RPHAST} denotes the accelerated variant of this algorithm utilizing Lazy RPHAST as described in Section~\ref{sec:lazy_rphast_path}.
 

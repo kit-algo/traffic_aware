@@ -54,7 +54,7 @@ table = table.round(1)
 lines = table.to_latex(escape=False).split("\n")
 
 lines = lines[:2] + [
-  R" & Nodes          & Edges          & \multicolumn{2}{c}{Preprocessing [s]} \\ \cmidrule(lr){4-5}"
+  R" & Vertices       & Edges          & \multicolumn{2}{c}{Preprocessing [s]} \\ \cmidrule(lr){4-5}"
   R" & $[\cdot 10^6]$ & $[\cdot 10^6]$ & Phase 1 & Phase 2 \\"
 ] + lines[4:]
 
