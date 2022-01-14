@@ -86,12 +86,13 @@
 \begin{abstract}
 We study the shortest smooth path problem, which is motivated by traffic-aware routing in road networks.
 The goal is to compute the fastest route according to the current traffic situation while avoiding undesired detours, such as briefly using a parking area to bypass a jammed highway.
-% Detours are prevented by limiting the uniformly bounded stretch, i.e. the maximum stretch over all subpaths, with respect to a second smooth weight function which disregards the traffic situation.
+Detours are prevented by limiting the uniformly bounded stretch, i.e. the maximum stretch over all subpaths, with respect to a second weight function which disregards the traffic situation.
 In this paper, we settle the complexity of the problem and show that it is strongly $\mathcal{NP}$-complete.
 % TODO efficiently vs NP-hard
 We then present practical algorithms to solve the problem efficiently on continental-sized road networks.
+A crucial building block is our novel algorithm to compute the uniformly bounded stretch (UBS) with only a few shortest path computations on typical paths.
+All our algorithms utilize Lazy RPHAST, a recently proposed technique to incrementally compute distances from many vertices towards a common target.
 % Lazy RPHAST on-demand shortest path trees
-A crucial building block is a novel algorithm to compute the uniformly bounded stretch (UBS) with only a few shortest path computations on typical paths.
 An extensive evaluation shows that our algorithms outperform the state of the art by at least an order of magnitude.
 It also shows that our new UBS algorithm outperforms existing approaches by two orders of magnitude and is the first algorithm which allows computing exact UBS values in a matter of milliseconds.
 
@@ -115,7 +116,10 @@ These routes can be obtained by computing shortest paths on a weighted graph rep
 To present users with \emph{good} routes, it is crucial to take the current traffic situation into account.
 However, integrating the current traffic situation comes with its own challenges.
 As traffic feeds are derived from live data, they are inherently noisy and incomplete.
-Solving the classical shortest path problem with free flow travel times exchanged for live traffic travel times may lead to problematic routes including undesired detours such as briefly using a parking area to bypass a jammed highway.
+Solving the classical shortest path problem with free flow travel times exchanged for live traffic travel times may lead to problematic routes.
+For example, such routes may include undesired detours such as briefly using a parking area to bypass a jammed highway.
+Another problem is when an alternative routes around a traffic jam is suggested but the alternative in reality is congested, too, even though this is not represented in the routing data due to a low-quality traffic feed.
+
 In this paper, we therefore study an extended problem model, the shortest smooth path problem (SSPP).
 In takes two weight functions into account to avoid such undesired detours.
 The first \emph{volatile} weight function models the current traffic situation.
@@ -136,10 +140,12 @@ During preprocessing, additional shortcut arcs are inserted into the graph, whic
 On continental-sized road networks with tens of millions of vertices and edges, this preprocessing typically takes a few minutes.
 Shortest path queries can be answered in less than a millisecond.
 Applying CH to extended problem models is not trivially possible.
-We therefore utilize the easier to extend classical A* algorithm~\cite{hnr-afbhd-68} with CH-Potentials, a CH-based heuristic~\cite{strasser_et_al:LIPIcs.SEA.2021.6}.
+We therefore utilize CH indirectly as an A*~\cite{hnr-afbhd-68} heuristic
+This approach is called CH-Potentials~\cite{strasser_et_al:LIPIcs.SEA.2021.6}.
+CH-Potentials is built on Lazy RPHAST~\cite{strasser_et_al:LIPIcs.SEA.2021.6}, a CH-based many-to-one algorithm to incrementally compute exact distances from many vertices towards a common target.
 
 Research on route planning algorithms and traffic has so far mostly focused on the interactions between traffic and the preprocessing.
-For live traffic, this resulted in techniques which have two preprocessing phases.
+For live traffic, previous research developed techniques which have two preprocessing phases.
 The first one may be slow but must be independent of any weight function.
 The second one, called \emph{customization}, typically takes few seconds or less and allows regular traffic updates.
 CRP was the first such three-phase technique and has since been extended into a comprehensive framework of routing algorithms~\cite{bdgmpsww-rptn-16}.
@@ -147,24 +153,43 @@ With Customizable Contraction Hierarchies (CCH), CH has also been extended to a 
 Another line of research studies the integration of predicted traffic~\cite{dn-crdtd-12,bgsv-mtdtt-13,bdpw-dtdrp-16,swz-sfert-21}.
 Here, edge weights are functions of the time instead of scalar values.
 
-The shortest smooth path problem (SSPP) was initially introduced by Delling et al. in~\cite{dss-tarrn-18}.
-The paper includes two CRP-based algorithms for the SSPP.
-One of them is fast but inexact and may sometimes even accept paths with forbidden detours.
-The other one takes seconds even on simple queries.
-Also the question of the complexity of the problem remains open.
-Our work originated from the question if the algorithms of Delling et al. could be accelerated with the CH-Potentials approach from~\cite{strasser_et_al:LIPIcs.SEA.2021.6}.
+This SSPP was initially introduced by Delling et al. in~\cite{dss-tarrn-18}.
+The authors discuss the complexity of the problem and show some relations between SSPP and Knapsack but no definitive conclusions could be drawn in their work.
+The paper also includes two algorithms for the SSPP.
+Iterative Path Blocking (IPB) is presented as an exact algorithm for the SSPP.
+However, it has two problems:
+First, it takes several seconds even on short-range queries which makes it not suitable for practical applications.
+Seconds, as we show in this work, it is not exact.
+The other algorithm is based on the via node paradigm, i.e. it finds solutions which are concatenations of two shortest paths.
+It is much faster but the UBS checking is performed only heuristically and it may even find paths containing forbidden detours.
 We are not aware of any other works studying the shortest smooth path problem.
-%
-An important subproblem of SSPP is the computation of the uniformly bounded stretch (UBS) of paths.
-The UBS has been used before in the context of alternative route algorithms~\cite{adgw-arrn-13} as a measure of quality of alternative routes.
 
-\subparagraph{Outline}
+Limiting the relative length of detours can be formalized with the \emph{uniformly bounded stretch} (UBS).
+The UBS is a path quality measure and quantifies how much longer detours on a path are than their respective fastest alternative.
+So far, it has been primarily studied in the context of alternative routes~\cite{adgw-arrn-13}.
+While useful, it is expensive to evaluate and requires checking all subpaths of a path.
+The authors of~\cite{adgw-arrn-13} state that it would be ideal to check the UBS in time proportional to the length of the path and a few shortest path queries though they are not aware of any way to do that.
+To the best of our knowledge, this goal has not been achieved to this day.
+% There, the authors state that it would be ideal to check the UBS in time proportional to the length of the path and a few shortest path queries.
+% T Test?
+% Due to the lack of such an option they resort to approximations.
 
-The rest of the paper is organized as follows:
-Section~\ref{sec:prelim} contains notation and recapitulates existing algorithms we build upon.
-In Section~\ref{sec:complexity}, we prove that SSPP is strongly $\mathcal{NP}$-complete.
-Section~\ref{sec:algos} contains our improved adaptation of the iterative path blocking algorithm from~\cite{dss-tarrn-18}, our novel UBS computation algorithm and a new heuristic for SSPP: the iterative path fixing algorithm.
-In Section~\ref{sec:eval}, we present a thorough evaluation of our algorithms.
+\subparagraph{Contribution}
+
+% The rest of the paper is organized as follows:
+% Section~\ref{sec:prelim} contains notation and recapitulates existing algorithms we build upon.
+Our paper contains the following contributions:
+We settle the question of the complexity of the SSPP.
+In Section~\ref{sec:complexity}, we prove that the SSPP is strongly $\mathcal{NP}$-complete.
+Section~\ref{sec:algos} contains algorithmic results.
+First, we show that IPB as described in~\cite{dss-tarrn-18} may not find optimal results.
+Second, we describe necessary adjustments to make it exact.
+Third, we present an alternative realization based on A* and CH-Potentials~\cite{strasser_et_al:LIPIcs.SEA.2021.6}.
+Fourth, we present an efficient algorithm to compute exact UBS values, typically with only a few shortest path queries and in time proportional to the path length which is what the authors of~\cite{adgw-arrn-13} had hoped for.
+Fifth, we present Iterative Path Fixing, a new heuristic.
+All our algorithms utilize Lazy RPHAST as a crucial ingredient to achieve fast running times.
+Section~\ref{sec:eval} contains a thorough evaluation of our algorithms.
+It clearly shows the effectiveness of our UBS algorithm and our CH-Potentials-based IPB realization, outperforming the state of the art by around two orders of magnitude.
 
 \section{Preliminaries}
 \label{sec:prelim}
@@ -323,9 +348,8 @@ The thick arcs indicate a Hamiltonian path and the corresponding shortest $\epsi
 \label{fig:transformation}
 \end{figure}
 
-Delling et al. show some relations between SSPP and Knapsack but the complexity remains open in their paper.
 In this section, we prove that SSPP is strongly $\mathcal{NP}$-complete for any $\epsilon \in \mathbb{Q}^{>0}$.
-We therefore define the decision variant of the problem as follows:
+We define the decision variant of the problem as follows:
 An instance $(G, w, w^*, s, t, k)$ is a \emph{yes} instance of $\epsilon$-\textsc{ShortestSmoothPath-Dec} if and only if there exists a path $P = (s,\dots, t)$ in $G$ with $w^*(P) \leq k$ and $\ubs_w(P) < 1 + \epsilon$.
 
 \begin{theorem}
@@ -517,11 +541,9 @@ Thus, the heuristic is close to perfect and A* very effective for this problem.
 
 According to Delling et al.~\cite{dss-tarrn-18}, the UBS computation is one of the bottlenecks of the IPB approach.
 They employ a many-to-many algorithm.
-Computing the UBS has been studied before in the context of alternative route algorithms~\cite{adgw-arrn-13}.
-There, the authors state that it would be ideal to check the UBS in time proportional to the length of the path and a few shortest path queries.
-% Due to the lack of such an option they resort to approximations.
-Here, we introduce an algorithm which achieves this when possible.
-We also prove that this is not always possible by constructing a worst-case example where each subpath has a distinct stretch value.
+Here, we introduce an algorithm which can compute exact UBS values of typical paths with a few shortest path queries.
+We also present a worst-case example where each subpath has a distinct stretch value.
+This suggests that achieving subquadratic worst-case running time may not be possible.
 
 Consider a path $P=(s=v_1,\dots,t=v_k)$ as depicted in Figure~\ref{fig:ubs_tree}.
 Our algorithm works iteratively.
