@@ -105,7 +105,7 @@ It also shows that our new UBS algorithm outperforms existing approaches by two 
 \section{Introduction}
 
 Over the past years, mobile navigation applications have become ubiquitous.
-A core feature of these applications is to compute good routes between locations in road networks.
+A core feature of these applications is to compute routes between locations in road networks.
 These routes can be obtained by computing shortest paths on a weighted graph representing the road network with travel times as weights.
 % This is useful to users unfamiliar in a certain area to find their way.
 % However, users familiar with their route also often use these applications because they take the current traffic situation into account.
@@ -117,23 +117,23 @@ For example, such routes may include undesired detours such as briefly using a p
 % Another problem is when an alternative route around a traffic jam is suggested but the alternative is congested, too, despite this not being represented in the routing data due to a low-quality traffic feed.
 
 We therefore study an extended problem model, the \emph{shortest smooth path problem} (SSPP)~\cite{dss-tarrn-18}.
-In takes two weight functions into account to avoid undesired detours.
+To avoid undesired detours, a second weight function is taken into account.
 The first \emph{volatile} weight function models the current traffic situation.
 The second \emph{smooth} weight function models the free flow travel times and may include additional penalties, for example to avoid residential areas.
-The goal is to find the shortest path with respect to the volatile weights while limiting the relative length of detours with respect to the smooth weight.
+The goal is to find the shortest path with respect to the volatile weights without too severe detours with respect to the smooth weights.
 
 \subparagraph{Related Work}
 
 The classical shortest path problem on weighted graphs can be solved with Dijkstra's algorithm~\cite{d-ntpcg-59}.
 To this day, no asymptotically faster algorithm is known.
 However, for many practical applications on continental-sized road networks, it is too slow.
-Thus, the past decade has seen a lot of research effort on engineering faster shortest path algorithms for road networks.
-This research has played an important role in enabling modern routing applications.
+During the past decade, this has motivated a lot of research effort on engineering faster shortest path algorithms on road networks.
+Results from this research have played an important role in enabling modern routing applications.
 By introducing an offline preprocessing phase where auxiliary data is precomputed, queries can be accelerated by more than three orders of magnitude over Dijkstra's algorithm.
 For an extensive overview on these speed-up techniques, we refer to~\cite{bdgmpsww-rptn-16}.
 One particularly popular technique which we also utilize in this work is \emph{Contraction Hierarchies} (CH)~\cite{gssv-erlrn-12}.
 During preprocessing, additional shortcut arcs are inserted into the graph, which skip over unimportant vertices.
-On continental-sized road networks with tens of millions of vertices and edges, this preprocessing typically takes a few minutes.
+On continental-sized road networks with tens of millions of vertices and edges, CH preprocessing typically takes a few minutes.
 Shortest path queries can be answered in less than a millisecond.
 Applying CH to extended problem models is not always trivially possible.
 We therefore utilize CH indirectly as an \emph{A*}~\cite{hnr-afbhd-68} heuristic.
@@ -147,23 +147,24 @@ The second one, called \emph{customization}, typically takes few seconds or less
 \emph{Multi-Level Dijkstra}, commonly referred to as \emph{CRP}, was the first such three-phase technique and has since been extended into a comprehensive framework of routing algorithms~\cite{bdgmpsww-rptn-16}.
 With \emph{Customizable Contraction Hierarchies} (CCH), CH has also been extended to support a three-phase setup~\cite{dsw-cch-15}.
 Another line of research studies the integration of predicted traffic~\cite{dn-crdtd-12,bgsv-mtdtt-13,bdpw-dtdrp-16,swz-sfert-21}.
-Here, edge weights are functions of the time instead of scalar values.
+Here, edge weights are functions of the daytime instead of scalar values.
 
 The SSPP was initially introduced by Delling et al. in~\cite{dss-tarrn-18}.
 The authors discuss the complexity of the problem and show some relations between SSPP and Knapsack but no definitive conclusions could be drawn in their work.
-% The paper also includes two algorithms for the SSPP.
+The paper also includes two CRP-based algorithms for the SSPP.
 \emph{Iterative Path Blocking} (IPB) is presented as an exact algorithm for the SSPP.
 However, it has two issues:
-First, it takes several seconds even on short-range queries, which makes it unsuitable for practical applications.
+First, it takes several seconds even on short-range queries.
+This makes it unsuitable for practical applications.
 Second, as we show in this work, it is, in fact, not exact.
 The authors also present a heuristic algorithm based on the via node paradigm, i.e. it finds solutions which are concatenations of two shortest paths.
-It is much faster but the UBS is checked heuristically and may find paths containing forbidden detours.
+It is much faster but may find paths containing forbidden detours because the UBS is checked heuristically.
 We are not aware of any other works studying the SSPP.
 
 In the SSPP, limiting the relative length of detours is formalized with the \emph{uniformly bounded stretch} (UBS).
 The UBS is a path quality measure and quantifies how much longer detours on a path are than their respective fastest alternative.
 So far, it has been primarily studied in the context of alternative routes~\cite{adgw-arrn-13}.
-While quite useful, it is expensive to evaluate and requires evaluating all subpaths of a path.
+While quite useful, it is expensive to compute and requires evaluating all subpaths of a path.
 The authors of~\cite{adgw-arrn-13} state that it would be ideal to check the UBS in time proportional to the length of the path and a few shortest path queries, though they are not aware of any way to do that.
 To the best of our knowledge, this goal has not been achieved to this day.
 % There, the authors state that it would be ideal to check the UBS in time proportional to the length of the path and a few shortest path queries.
@@ -181,7 +182,7 @@ Section~\ref{sec:algos} contains algorithmic results.
 First, we show that IPB as described in~\cite{dss-tarrn-18} may not find optimal results.
 Second, we describe necessary adjustments to make it exact.
 Third, we present an alternative realization based on A* and CH-Potentials~\cite{strasser_et_al:LIPIcs.SEA.2021.6}.
-Fourth, we present an efficient algorithm to compute exact UBS values, typically with only a few shortest path queries and in time proportional to the path length which is what the authors of~\cite{adgw-arrn-13} had hoped for.
+Fourth, we present an efficient algorithm to compute exact UBS values, typically with only a few shortest path queries and in time proportional to the path length as the authors of~\cite{adgw-arrn-13} had hoped for.
 Fifth, we present Iterative Path Fixing, a new SSPP heuristic.
 All our algorithms utilize Lazy RPHAST as a crucial ingredient to achieve fast running times.
 Section~\ref{sec:eval} contains a thorough evaluation of our algorithms.
