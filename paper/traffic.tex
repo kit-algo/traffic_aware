@@ -93,18 +93,11 @@ Detours are prevented by limiting the uniformly bounded stretch (UBS) with respe
 The UBS is a path quality metric which measures the maximum relative length of detours on a path.
 In this paper, we settle the complexity of the SSPP and show that it is strongly $\mathcal{NP}$-complete.
 We then present practical algorithms to solve the problem on continental-sized road networks.
-A crucial building block is our novel algorithm to compute the UBS with only a few shortest path computations on typical paths.
+A crucial building block of these algorithms is the UBS evaluation.
+We propose a novel algorithm to compute the UBS with only a few shortest path computations on typical paths.
 All our algorithms utilize Lazy RPHAST, a recently proposed technique to incrementally compute distances from many vertices towards a common target.
-% Lazy RPHAST on-demand shortest path trees
-An extensive evaluation shows that our algorithms outperform the state of the art SSPP algorithms by at least an order of magnitude. % TODO
-It also shows that our new UBS algorithm outperforms existing approaches by two orders of magnitude and is the first algorithm which allows computing exact UBS values in a matter of milliseconds.
-
-% proof hardness
-% introduce first algo to compute exact UBS in milliseconds
-% present IPF heuristic
-% speed up IDB
-% adjustments to make exact
-% extensive evaluation
+An extensive evaluation shows that our algorithms outperform competing SSPP algorithms by at least an order of magnitude.
+It also shows that our new UBS algorithm outperforms existing approaches by two orders of magnitude and is the first to compute exact UBS values in a matter of milliseconds.
 \end{abstract}
 
 \newpage
