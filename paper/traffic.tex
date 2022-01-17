@@ -92,7 +92,6 @@ The goal is to compute the fastest route according to the current traffic situat
 Detours are prevented by limiting the uniformly bounded stretch (UBS) with respect to a second weight function which disregards the traffic situation.
 The UBS is a path quality metric which measures the maximum relative length of detours on a path.
 In this paper, we settle the complexity of the SSPP and show that it is strongly $\mathcal{NP}$-complete.
-% TODO efficiently vs NP-hard
 We then present practical algorithms to solve the problem on continental-sized road networks.
 A crucial building block is our novel algorithm to compute the UBS with only a few shortest path computations on typical paths.
 All our algorithms utilize Lazy RPHAST, a recently proposed technique to incrementally compute distances from many vertices towards a common target.
@@ -161,11 +160,11 @@ The SSPP was initially introduced by Delling et al. in~\cite{dss-tarrn-18}.
 The authors discuss the complexity of the problem and show some relations between SSPP and Knapsack but no definitive conclusions could be drawn in their work.
 % The paper also includes two algorithms for the SSPP.
 \emph{Iterative Path Blocking} (IPB) is presented as an exact algorithm for the SSPP.
-However, it has two problems:
+However, it has two issues:
 First, it takes several seconds even on short-range queries, which makes it unsuitable for practical applications.
 Second, as we show in this work, it is, in fact, not exact.
 The authors also present a heuristic algorithm based on the via node paradigm, i.e. it finds solutions which are concatenations of two shortest paths.
-It is much faster but the UBS is checked heuristically and it may find paths containing forbidden detours.
+It is much faster but the UBS is checked heuristically and may find paths containing forbidden detours.
 We are not aware of any other works studying the SSPP.
 
 In the SSPP, limiting the relative length of detours is formalized with the \emph{uniformly bounded stretch} (UBS).
@@ -233,7 +232,7 @@ Then, all vertices are contracted successively by ascending importance.
 To \emph{contract} a vertex means to temporarily remove it from the graph while inserting \emph{shortcut arcs} between neighbors with higher rank to preserve shortest distances among them.
 The result is an \emph{augmented graph} $G^+$ with original arcs and shortcuts.
 $G^+$ can be split into $\gchu$ and $G^{\downarrow}$ where $\gchu$ only contains arcs $uv$ where $u$ is less important than $v$ and $G^{\downarrow}$ vice versa.
-The augmented graph has the property that for any two vertices $s$ and $t$, there always exists an \emph{up-down} $st$-path of shortest distance which first only uses only arcs from $\gchu$ and then only arcs from $G^{\downarrow}$.
+The augmented graph has the property that for any two vertices $s$ and $t$, there always exists an \emph{up-down} $st$-path of shortest distance which first uses only arcs from $\gchu$ and then only arcs from $G^{\downarrow}$.
 Such a path can be found by running Dijkstra's algorithm from $s$ on $\gchu$ and from $t$ on the reversed downward graph $\gchd$ graph.
 Reconstructing the full path without any shortcuts is possible by recursively unpacking shortcuts.
 For this, one can store for each shortcut the vertex which was contracted when the shortcut was inserted.
@@ -275,7 +274,7 @@ It allows fast updates to the preprocessing, for example to integrate informatio
 However, this only affects the preprocessing.
 The result of the CCH preprocessing is also an augmented graph, only with some additional properties.
 The CH query algorithms and Lazy RPHAST can be applied without any modification.
-For the algorithms we discuss in this paper, there is no practical difference between CH and CCH and we describe our algorithms based on augmented graphs.
+For the algorithms we discuss in this paper, there is no practical difference between CH and CCH, and we describe our algorithms based on augmented graphs.
 Our implementation is built on CCH-Potentials to support quick updates to live traffic weights.
 For a detailed discussion of the differences between CH and CCH and the changes to the preprocessing see~\cite{dsw-cch-15}.
 
@@ -290,8 +289,8 @@ The UBS of a path $P = (v_1, \dots, v_i, \dots, v_j \dots, v_k)$ where $P_{1,i} 
 This is because the stretch of any subpath only decreases when appending optimal segments to the beginning or end.
 
 In~\cite{dss-tarrn-18}, Delling et al. introduce the shortest smooth path problem (SSPP).
-A path $P$ is $\epsilon$-smooth with regards to a weight function $w$ when $\ubs_w(P) < 1 + \epsilon$.
-Given a graph $G$, vertices $s$ and $t$, a smooth weight function $w$ and a volatile weight function $w^*$ and a parameter $\epsilon > 0$, the shortest smooth path problem is to find the shortest path with respect to $w^*$ that is $\epsilon$-smooth with regards to $w$.
+A path $P$ is $\epsilon$-smooth with respect to a weight function $w$ when $\ubs_w(P) < 1 + \epsilon$.
+Given a graph $G$, vertices $s$ and $t$, a smooth weight function $w$ and a volatile weight function $w^*$ and a parameter $\epsilon > 0$, the shortest smooth path problem is to find the shortest path with respect to $w^*$ that is $\epsilon$-smooth with respect to $w$.
 
 \section{Complexity}\label{sec:complexity}
 
@@ -346,9 +345,11 @@ Given a graph $G$, vertices $s$ and $t$, a smooth weight function $w$ and a vola
 \draw[->] (w2) to [bend right=35] node [pos=0.3, above=-.8mm, sloped] { $1+\epsilon$,1 } (v3);
 
 \end{tikzpicture}
-\caption{Illustration of our transformation from \textsc{HamiltonPath} to \textsc{ShortestSmoothPath}.
+\caption{
+Illustration of our transformation from \textsc{HamiltonPath} to \textsc{ShortestSmoothPath}.
 The first arc weight is the smooth weight, the second the volatile weight.
-The thick arcs indicate a Hamiltonian path and the corresponding shortest $\epsilon$-smooth path.}
+The thick arcs indicate a Hamiltonian path and the corresponding shortest $\epsilon$-smooth path.
+}
 \label{fig:transformation}
 \end{figure}
 
@@ -421,7 +422,7 @@ Thus, the SSPP solution induces a valid solution for the \textsc{HamiltonPath} i
 Delling et al. propose the \emph{Iterative Path Blocking} (IPB) algorithm to solve the SSPP optimally.
 The algorithm repeats two steps until a valid path is found.
 It maintains a set of blocked paths, which is initially empty.
-In the first step, a shortest path with regards to $w^*$ is computed while avoiding any blocked paths.
+In the first step, a shortest path with respect to $w^*$ is computed while avoiding any blocked paths.
 In the second step, the obtained path is checked for subpaths violating the UBS constraint.
 Any violating subpaths are added to the list of blocked paths and the algorithm continues with the next iteration.
 If no violating subpath is found, the final path is returned.
@@ -447,7 +448,9 @@ In this paper, we propose optimized implementations for both steps based on Lazy
 \draw[->] (s) to [bend right=30] node [midway, below] { 6 } (v);
 \draw[->] (u) to [bend left=30] node [midway, above] { 1, 10 } (t);
 \end{tikzpicture}
-\caption{Example graph where for $\epsilon = 1$ the shortest $\epsilon$-smooth path $(s,v,t)$ is not prefix-optimal. For all arcs except $ut$, the smooth and the volatile weight function are equal. For $uv$, the smooth weight is 1 and the volatile weight 10.}
+\caption{
+Example graph where for $\epsilon = 1$ the shortest $\epsilon$-smooth path $(s,v,t)$ is not prefix-optimal. For all arcs except $ut$, the smooth and the volatile weight function are equal. For $uv$, the smooth weight is 1 and the volatile weight 10.
+}
 \label{fig:ipb_counterexample}
 \end{figure}
 
@@ -469,7 +472,7 @@ IPB-H will still find an $\epsilon$-smooth path though it may not necessarily be
 Therefore, it is only a heuristic for the SSPP.
 
 To guarantee to find shortest smooth path with Dijkstra's algorithm, we need to adjust the notion of optimality used to compare labels.
-It might be necessary to keep a label with sub-optimal distance from the start as in the example from Figure~\ref{fig:ipb_counterexample} where the label for $(s,v)$ needs to be kept at $u$ despite being longer than $(s,u,v)$.
+It might be necessary to keep a label with suboptimal distance from the start as in the example from Figure~\ref{fig:ipb_counterexample} where the label for $(s,v)$ needs to be kept at $u$ despite being longer than $(s,u,v)$.
 This leads to a \emph{label-correcting} variation of Dijkstra's algorithm with the possibility for multiple labels per vertex.
 A \emph{label} $l$ at a vertex $v$ consists of a distance from the source $\mathtt{D}_l$, a set of active blocked paths $\mathtt{A}_l$, and a pointer to the parent vertex and label for efficient reconstruction of the path $P(l) = (s,\dots,v)$ represented by the label.
 The active blocked path set $\mathtt{A}_l$ contains all blocked paths which have a prefix which is a suffix of $P(l)$.
@@ -539,7 +542,9 @@ Thus, the heuristic is close to perfect and A* very effective for this problem.
 \draw[->, dashed, red] (1) to [bend right=30] (2);
 \draw[->, dashed, red] (s) to [bend right=30] (1);
 \end{tikzpicture}
-\caption{Example path (solid, black) with shortest path tree from $v_1$ to all vertices on the path (dashed, blue) and reverse shortest path tree from all vertices on the path to $v_9$ (dashed, red).}
+\caption{
+Example path (solid, black) with shortest path tree from $v_1$ to all vertices on the path (dashed, blue) and reverse shortest path tree from all vertices on the path to $v_9$ (dashed, red).
+}
 \label{fig:ubs_tree}
 \end{figure}
 
@@ -562,7 +567,7 @@ In the example in Figure~\ref{fig:ubs_tree} this is $v_3$.
 We analogously obtain the first branching vertex in the reverse shortest path tree to $v_k$ ($v_8$ in our example).
 Stated formally, this is the smallest index $j$ such that $P_{j,k}$ is a suffix of all shortest paths $\shp(v_l, t)$ where $1 \leq l \leq j$.
 % how to find? early termination
-By Observation~\ref{obs:append_sp_ubs} subpaths starting from vertices in the segment $P_{1,i-1}$ and subpaths ending at vertices from $P_{j+1,k}$ are not relevant to the UBS computation.
+By Observation~\ref{obs:append_sp_ubs}, subpaths starting from vertices in the segment $P_{1,i-1}$ and subpaths ending at vertices from $P_{j+1,k}$ are not relevant to the UBS computation.
 % Checking the stretch for subpaths $P_{j,l}$ where $j < i, i < l \leq k$ is not necessary.
 We exploit this and only check paths starting from $v_i$ or ending at $v_j$ in the current iteration.
 
@@ -574,7 +579,7 @@ Forbidding the shortest violating segment starting at $v_i$ is sufficient becaus
 Checking the stretches of the subpaths $P_{l,j}$ where $i \leq l < j$ works analogously.
 
 Having checked all these stretches, we continue with the next iteration by applying the whole algorithm to the subpath $P_{i+1,j-1}$.
-We can stop when $i+1 \geq j-1$ or when the whole considered path is a shortest path between its endpoints.
+We can stop when $i+1 \geq j-1$ or when the entire considered path is a shortest path between its endpoints.
 
 % filtering covered
 
@@ -625,7 +630,7 @@ Thus, computing the UBS of the whole path without checking all $\Theta(n^2)$ str
 \end{algorithm2e}
 
 While this algorithm typically needs few stretch checks, running Dijkstra's algorithm a couple of times is still prohibitively slow on large road networks.
-Luckily, we can speed these computations up drastically by employing Lazy RPHAST, which we already used as a A* heuristic in the shortest path search phase.
+Luckily, we can speed these computations up drastically by employing Lazy RPHAST, which we already used as an A* heuristic in the shortest path search phase.
 Recall that Lazy RPHAST allows us to select one target vertex and then to compute shortest distances quickly from many vertices to this target.
 For the efficient UBS computation, we use two instantiations of this algorithm.
 In each iteration, we select both endpoints of the considered path and compute distances from and to the endpoints for all vertices on the path.
@@ -669,11 +674,11 @@ Phase 1 needs to be run only once for each graph, Phase 2 once for each weight f
 
 Table~\ref{tab:graphs} shows the road networks we use in our experiments alongside sequential preprocessing times.
 OSM Europe is the same network used in~\cite{dss-tarrn-18} and publicly available\footnote{\url{https://i11www.iti.kit.edu/resources/roadgraphs.php}}.
-The DIMACs Europe instance was made available by PTV\footnote{\url{https://ptvgroup.com}} for the 9th DIMACS implementation challenge~\cite{DemetrescuGJ09}.
+The DIMACS Europe instance was made available by PTV\footnote{\url{https://ptvgroup.com}} for the 9th DIMACS implementation challenge~\cite{DemetrescuGJ09}.
 It is not publicly available but can be obtained on request for research purposes\footnote{\url{https://i11www.iti.kit.edu/resources/roadgraphs.php}}.
 We derived the OSM Germany instance from an early 2020 snapshot of OpenStreetMap and converted into a routing graph using RoutingKit\footnote{\url{https://github.com/RoutingKit/RoutingKit}}.
 For this instance, we have proprietary traffic data provided by Mapbox\footnote{\url{https://mapbox.com}} which, unfortunately, we cannot provide.
-The data includes two live traffic snapshots in the form of OSM node id pairs and live speeds for the edge between the vertices.
+The data includes two live traffic snapshots in the form of OSM node ID pairs and live speeds for the edge between the vertices.
 One is from Friday 2019/08/02 afternoon and contains 320K vertex pairs and the other from Tuesday 2019/07/16 morning and contains 185K pairs.
 For the Europe instances, we do not have any real world traffic data.
 Thus, we resort to the approach suggested in~\cite{dss-tarrn-18} and generate synthetic live traffic:
@@ -687,7 +692,7 @@ Following the Dijkstra rank methodology, we store every $2^i$th settled vertex~\
 This allows evaluating the performance development against varying path lengths.
 In~\cite{adgw-arrn-13}, 1-hour queries were performed.
 For comparison, we also generate an \emph{1h} batch by picking the first settled vertex with a distance greater than one hour.
-In addition we generate a \emph{4h} batch for medium-range queries with the same method and a \emph{random} batch for long range queries where the target is picked uniformly at random.
+In addition, we generate a \emph{4h} batch for medium-range queries with the same method and a \emph{random} batch for long range queries where the target is picked uniformly at random.
 
 Preliminary experiments showed that some queries take prohibitively long to answer exactly.
 Since we are solving an $\mathcal{NP}$-hard problem, this is not surprising.
@@ -777,16 +782,15 @@ The running time performance profile in Figure~\ref{fig:perf_profile} allows for
 IPF is the fastest algorithm on about 65\% of the queries and almost never more than 10 times slower than the fastest one.
 Surprisingly, IPB-H is also sometimes the fastest to answer a query (in 35\% of the queries) but it may also be up to 300 times slower than the fastest algorithm.
 However, for 83\% of all queries it stays within a factor of 10.
-IPB-H fastest on 35\% and 83\% within factor 10.
 The exact algorithm is never the fastest but still within a factor of 10 for 65\% of the queries.
 It still may be several thousand times slower than the fastest algorithm in extreme cases, even with the running time limited to 10 seconds.
 
 The path length performance profile also yields useful insights.
-Since IPB-E is an exact algorithm, its performance profile contains only a single datapoint, i.e. for all queries which terminated successfully IPB-E finds the shortest path.
+Since IPB-E is an exact algorithm, its performance profile contains only a single data point, i.e. for all queries which terminated successfully IPB-E finds the shortest path.
 The line for IPB-H is almost constant.
 This means, there are only few queries where it does not find the best solution.
 Even when it does not find the best solution, it is close to the best one, i.e. the maximum length increase factor over the best solution is 1.36 and all other values are below 1.1.
-It is quite possible that IPB-H found the optimal solution even for some of the queries where IPB-E did not terminate.
+It is quite possible that IPB-H found the optimal solution even for some queries where IPB-E did not terminate.
 The qualitative performance of IPF varies more strongly.
 It also finds the best solution on 85\% of the queries.
 More than 99\% of the obtained solutions are within a factor of 1.2 to the best found.
@@ -801,7 +805,7 @@ It sometimes pays for this with worse solution quality but is still very close t
 This makes it an algorithm suitable for practical applications.
 IPB-H is also a very effective heuristic.
 It is drastically faster than the exact algorithm and sometimes even faster than IPF.
-Its performance in terms of quality is much more stable than IPF and usually IPB-H will find the best path or something very close to it.
+Its performance in terms of quality is much more stable than IPF and often IPB-H will find the best path or something very close to it.
 The difference in average length increase between IPB-E and IPB-H was not because IPB-H finds much worse paths but because it is able to answer queries which IPB-E cannot answer.
 However, it still fails to answer about 5\% of all queries in less than 10 seconds.
 The running time of IPB-E varies even more strongly.
