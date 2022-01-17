@@ -23,17 +23,20 @@
 
 \titlerunning{Fast Computation of Shortest Smooth Paths and UBS with Lazy RPHAST} %TODO optional, please use if title is longer than one line
 
-\author{Jane {Open Access}}{Dummy University Computing Laboratory, [optional: Address], Country \and My second affiliation, Country \and \url{http://www.myhomepage.edu} }{johnqpublic@dummyuni.org}{https://orcid.org/0000-0002-1825-0097}{(Optional) author-specific funding acknowledgements}%TODO mandatory, please use full name; only 1 author per \author macro; first two parameters are mandatory, other parameters can be empty. Please provide at least the name of the affiliation and the country. The full address is optional. Use additional curly braces to indicate the correct name splitting when the last name consists of multiple name parts.
+\author{Tim Zeitz}{Karlsruhe Institute of Technology, Germany}{tim.zeitz@kit.edu}{https://orcid.org/0000-0003-4746-3582}{}%TODO mandatory, please use full name; only 1 author per \author macro; first two parameters are mandatory, other parameters can be empty. Please provide at least the name of the affiliation and the country. The full address is optional. Use additional curly braces to indicate the correct name splitting when the last name consists of multiple name parts.
 
-\author{Joan R. Public\footnote{Optional footnote, e.g. to mark corresponding author}}{Department of Informatics, Dummy College, [optional: Address], Country}{joanrpublic@dummycollege.org}{[orcid]}{[funding]}
+% \author{Joan R. Public\footnote{Optional footnote, e.g. to mark corresponding author}}{Department of Informatics, Dummy College, [optional: Address], Country}{joanrpublic@dummycollege.org}{[orcid]}{[funding]}
 
-\authorrunning{J. Open Access and J.\,R. Public} %TODO mandatory. First: Use abbreviated first/middle names. Second (only in severe cases): Use first author plus 'et al.'
+\authorrunning{T. Zeitz} %TODO mandatory. First: Use abbreviated first/middle names. Second (only in severe cases): Use first author plus 'et al.'
 
-\Copyright{Jane Open Access and Joan R. Public} %TODO mandatory, please use full first names. LIPIcs license is "CC-BY";  http://creativecommons.org/licenses/by/3.0/
+\Copyright{Tim Zeitz} %TODO mandatory, please use full first names. LIPIcs license is "CC-BY";  http://creativecommons.org/licenses/by/3.0/
 
-\ccsdesc[100]{\textcolor{red}{Replace ccsdesc macro with valid one}} %TODO mandatory: Please choose ACM 2012 classifications from https://dl.acm.org/ccs/ccs_flat.cfm 
+% \ccsdesc[100]{\textcolor{red}{Replace ccsdesc macro with valid one}} %TODO mandatory: Please choose ACM 2012 classifications from https://dl.acm.org/ccs/ccs_flat.cfm
+\ccsdesc[500]{Theory of computation~Shortest paths}
+\ccsdesc[300]{Mathematics of computing~Graph algorithms}
+\ccsdesc[500]{Applied computing~Transportation}
 
-\keywords{Dummy keyword} %TODO mandatory; please add comma-separated list of keywords
+\keywords{realistic road networks, route planning, shortest paths, traffic-aware routing, live traffic, uniformly bounded stretch}%TODO mandatory; please add comma-separated list of keywords
 
 \category{} %optional, e.g. invited paper
 
@@ -45,7 +48,7 @@
 
 %\funding{(Optional) general funding statement \dots}%optional, to capture a funding statement, which applies to all authors. Please enter author specific funding statements as fifth argument of the \author macro.
 
-\acknowledgements{I want to thank \dots}%optional
+\acknowledgements{I want to thank my colleagues for from the scalable algorithms group Christopher Weyand, Marcus Wilhelm and Thomas Bläsius for pointing out a crucial fact on subpath-optimality at our group workshop. Further, I want to thank my colleague Jonas Sauer for many helpful discussions on algorithmic ideas and proofreading of early drafts of this paper.}%optional
 
 %\nolinenumbers %uncomment to disable line numbering
 
@@ -84,16 +87,17 @@
 
 %TODO mandatory: add short abstract of the document
 \begin{abstract}
-We study the shortest smooth path problem, which is motivated by traffic-aware routing in road networks.
+We study the shortest smooth path problem (SSPP), which is motivated by traffic-aware routing in road networks.
 The goal is to compute the fastest route according to the current traffic situation while avoiding undesired detours, such as briefly using a parking area to bypass a jammed highway.
-Detours are prevented by limiting the uniformly bounded stretch, i.e. the maximum stretch over all subpaths, with respect to a second weight function which disregards the traffic situation.
-In this paper, we settle the complexity of the problem and show that it is strongly $\mathcal{NP}$-complete.
+Detours are prevented by limiting the uniformly bounded stretch (UBS) with respect to a second weight function which disregards the traffic situation.
+The UBS is a path quality metric which measures the maximum relative length of detours on a path.
+In this paper, we settle the complexity of the SSPP and show that it is strongly $\mathcal{NP}$-complete.
 % TODO efficiently vs NP-hard
-We then present practical algorithms to solve the problem efficiently on continental-sized road networks.
-A crucial building block is our novel algorithm to compute the uniformly bounded stretch (UBS) with only a few shortest path computations on typical paths.
+We then present practical algorithms to solve the problem on continental-sized road networks.
+A crucial building block is our novel algorithm to compute the UBS with only a few shortest path computations on typical paths.
 All our algorithms utilize Lazy RPHAST, a recently proposed technique to incrementally compute distances from many vertices towards a common target.
 % Lazy RPHAST on-demand shortest path trees
-An extensive evaluation shows that our algorithms outperform the state of the art by at least an order of magnitude.
+An extensive evaluation shows that our algorithms outperform the state of the art SSPP algorithms by at least an order of magnitude. % TODO
 It also shows that our new UBS algorithm outperforms existing approaches by two orders of magnitude and is the first algorithm which allows computing exact UBS values in a matter of milliseconds.
 
 % proof hardness
@@ -109,22 +113,22 @@ It also shows that our new UBS algorithm outperforms existing approaches by two 
 \section{Introduction}
 
 Over the past years, mobile navigation applications have become ubiquitous.
-A core feature of these applications is to compute good routes between locations in the road network.
+A core feature of these applications is to compute good routes between locations in road networks.
 These routes can be obtained by computing shortest paths on a weighted graph representing the road network with travel times as weights.
 % This is useful to users unfamiliar in a certain area to find their way.
 % However, users familiar with their route also often use these applications because they take the current traffic situation into account.
 To present users with \emph{good} routes, it is crucial to take the current traffic situation into account.
 However, integrating the current traffic situation comes with its own challenges.
 As traffic feeds are derived from live data, they are inherently noisy and incomplete.
-Solving the classical shortest path problem with free flow travel times exchanged for live traffic travel times may lead to problematic routes.
+Simply exchanging free flow for live traffic travel times and then solving the classical shortest path problem may lead to problematic routes.
 For example, such routes may include undesired detours such as briefly using a parking area to bypass a jammed highway.
-Another problem is when an alternative routes around a traffic jam is suggested but the alternative in reality is congested, too, even though this is not represented in the routing data due to a low-quality traffic feed.
+% Another problem is when an alternative route around a traffic jam is suggested but the alternative is congested, too, despite this not being represented in the routing data due to a low-quality traffic feed.
 
-In this paper, we therefore study an extended problem model, the shortest smooth path problem (SSPP).
-In takes two weight functions into account to avoid such undesired detours.
+We therefore study an extended problem model, the \emph{shortest smooth path problem} (SSPP)~\cite{dss-tarrn-18}.
+In takes two weight functions into account to avoid undesired detours.
 The first \emph{volatile} weight function models the current traffic situation.
 The second \emph{smooth} weight function models the free flow travel times and may include additional penalties, for example to avoid residential areas.
-The goal is then to find the shortest path with respect to the volatile weights while limiting the relative length of detours with respect to the smooth weight.
+The goal is to find the shortest path with respect to the volatile weights while limiting the relative length of detours with respect to the smooth weight.
 
 \subparagraph{Related Work}
 
@@ -135,40 +139,40 @@ Thus, the past decade has seen a lot of research effort on engineering faster sh
 This research has played an important role in enabling modern routing applications.
 By introducing an offline preprocessing phase where auxiliary data is precomputed, queries can be accelerated by more than three orders of magnitude over Dijkstra's algorithm.
 For an extensive overview on these speed-up techniques, we refer to~\cite{bdgmpsww-rptn-16}.
-One particularly popular technique which we also utilize in this work is Contraction Hierarchies (CH)~\cite{gssv-erlrn-12}.
+One particularly popular technique which we also utilize in this work is \emph{Contraction Hierarchies} (CH)~\cite{gssv-erlrn-12}.
 During preprocessing, additional shortcut arcs are inserted into the graph, which skip over unimportant vertices.
 On continental-sized road networks with tens of millions of vertices and edges, this preprocessing typically takes a few minutes.
 Shortest path queries can be answered in less than a millisecond.
-Applying CH to extended problem models is not trivially possible.
-We therefore utilize CH indirectly as an A*~\cite{hnr-afbhd-68} heuristic
-This approach is called CH-Potentials~\cite{strasser_et_al:LIPIcs.SEA.2021.6}.
-CH-Potentials is built on Lazy RPHAST~\cite{strasser_et_al:LIPIcs.SEA.2021.6}, a CH-based many-to-one algorithm to incrementally compute exact distances from many vertices towards a common target.
+Applying CH to extended problem models is not always trivially possible.
+We therefore utilize CH indirectly as an \emph{A*}~\cite{hnr-afbhd-68} heuristic.
+This approach is called \emph{CH-Potentials}~\cite{strasser_et_al:LIPIcs.SEA.2021.6}.
+CH-Potentials is built on \emph{Lazy RPHAST}~\cite{strasser_et_al:LIPIcs.SEA.2021.6}, a CH-based many-to-one algorithm to incrementally compute exact distances from many vertices towards a common target.
 
-Research on route planning algorithms and traffic has so far mostly focused on the interactions between traffic and the preprocessing.
-For live traffic, previous research developed techniques which have two preprocessing phases.
+So far, research on route planning algorithms and traffic has mostly focused on the interactions between traffic and the preprocessing.
+For live traffic, speed-up techniques which have two preprocessing phases have been proposed.
 The first one may be slow but must be independent of any weight function.
 The second one, called \emph{customization}, typically takes few seconds or less and allows regular traffic updates.
-CRP was the first such three-phase technique and has since been extended into a comprehensive framework of routing algorithms~\cite{bdgmpsww-rptn-16}.
-With Customizable Contraction Hierarchies (CCH), CH has also been extended to a three-phase setup~\cite{dsw-cch-15}.
+\emph{Multi-Level Dijkstra}, commonly referred to as \emph{CRP}, was the first such three-phase technique and has since been extended into a comprehensive framework of routing algorithms~\cite{bdgmpsww-rptn-16}.
+With \emph{Customizable Contraction Hierarchies} (CCH), CH has also been extended to support a three-phase setup~\cite{dsw-cch-15}.
 Another line of research studies the integration of predicted traffic~\cite{dn-crdtd-12,bgsv-mtdtt-13,bdpw-dtdrp-16,swz-sfert-21}.
 Here, edge weights are functions of the time instead of scalar values.
 
-This SSPP was initially introduced by Delling et al. in~\cite{dss-tarrn-18}.
+The SSPP was initially introduced by Delling et al. in~\cite{dss-tarrn-18}.
 The authors discuss the complexity of the problem and show some relations between SSPP and Knapsack but no definitive conclusions could be drawn in their work.
-The paper also includes two algorithms for the SSPP.
-Iterative Path Blocking (IPB) is presented as an exact algorithm for the SSPP.
+% The paper also includes two algorithms for the SSPP.
+\emph{Iterative Path Blocking} (IPB) is presented as an exact algorithm for the SSPP.
 However, it has two problems:
-First, it takes several seconds even on short-range queries which makes it not suitable for practical applications.
-Seconds, as we show in this work, it is not exact.
-The other algorithm is based on the via node paradigm, i.e. it finds solutions which are concatenations of two shortest paths.
-It is much faster but the UBS checking is performed only heuristically and it may even find paths containing forbidden detours.
-We are not aware of any other works studying the shortest smooth path problem.
+First, it takes several seconds even on short-range queries, which makes it unsuitable for practical applications.
+Second, as we show in this work, it is, in fact, not exact.
+The authors also present a heuristic algorithm based on the via node paradigm, i.e. it finds solutions which are concatenations of two shortest paths.
+It is much faster but the UBS is checked heuristically and it may find paths containing forbidden detours.
+We are not aware of any other works studying the SSPP.
 
-Limiting the relative length of detours can be formalized with the \emph{uniformly bounded stretch} (UBS).
+In the SSPP, limiting the relative length of detours is formalized with the \emph{uniformly bounded stretch} (UBS).
 The UBS is a path quality measure and quantifies how much longer detours on a path are than their respective fastest alternative.
 So far, it has been primarily studied in the context of alternative routes~\cite{adgw-arrn-13}.
-While useful, it is expensive to evaluate and requires checking all subpaths of a path.
-The authors of~\cite{adgw-arrn-13} state that it would be ideal to check the UBS in time proportional to the length of the path and a few shortest path queries though they are not aware of any way to do that.
+While quite useful, it is expensive to evaluate and requires evaluating all subpaths of a path.
+The authors of~\cite{adgw-arrn-13} state that it would be ideal to check the UBS in time proportional to the length of the path and a few shortest path queries, though they are not aware of any way to do that.
 To the best of our knowledge, this goal has not been achieved to this day.
 % There, the authors state that it would be ideal to check the UBS in time proportional to the length of the path and a few shortest path queries.
 % T Test?
@@ -178,15 +182,15 @@ To the best of our knowledge, this goal has not been achieved to this day.
 
 % The rest of the paper is organized as follows:
 % Section~\ref{sec:prelim} contains notation and recapitulates existing algorithms we build upon.
-Our paper contains the following contributions:
-We settle the question of the complexity of the SSPP.
-In Section~\ref{sec:complexity}, we prove that the SSPP is strongly $\mathcal{NP}$-complete.
+% Our paper contains the following contributions:
+% We settle the question of the complexity of the SSPP.
+In Section~\ref{sec:complexity}, we settle the complexity of the SSPP by proving that it is strongly $\mathcal{NP}$-complete.
 Section~\ref{sec:algos} contains algorithmic results.
 First, we show that IPB as described in~\cite{dss-tarrn-18} may not find optimal results.
 Second, we describe necessary adjustments to make it exact.
 Third, we present an alternative realization based on A* and CH-Potentials~\cite{strasser_et_al:LIPIcs.SEA.2021.6}.
 Fourth, we present an efficient algorithm to compute exact UBS values, typically with only a few shortest path queries and in time proportional to the path length which is what the authors of~\cite{adgw-arrn-13} had hoped for.
-Fifth, we present Iterative Path Fixing, a new heuristic.
+Fifth, we present Iterative Path Fixing, a new SSPP heuristic.
 All our algorithms utilize Lazy RPHAST as a crucial ingredient to achieve fast running times.
 Section~\ref{sec:eval} contains a thorough evaluation of our algorithms.
 It clearly shows the effectiveness of our UBS algorithm and our CH-Potentials-based IPB realization, outperforming the state of the art by around two orders of magnitude.
@@ -214,12 +218,12 @@ To keep track of the best-known distances, the algorithm maintains for each vert
 By storing the predecessor vertex on the shortest path from $s$ to $v$ in a parent array $\mathtt{P}[v]$, shortest paths can be efficiently reconstructed.
 By construction, Dijkstra's algorithm visits all vertices closer to $s$ than the target.
 The visited vertices are sometimes called the \emph{search space}.
-It can be reduced with the A* algorithm~\cite{hnr-afbhd-68} by guiding the search towards the target.
+It can be reduced with the \emph{A* algorithm}~\cite{hnr-afbhd-68} by guiding the search towards the target.
 Here, the queue is ordered by $\mathtt{D}[v] + h_t(v)$ where $h_t$ is a \emph{heuristic} which estimates a lower bound of $\dist(v,t)$.
 
 \subsection{(C)CH-Potentials}
 
-Contraction Hierarchies (CH) is a two-phase speed-up technique to accelerate shortest path computations on road networks through precomputation.
+\emph{Contraction Hierarchies} (CH) is a two-phase speed-up technique to accelerate shortest path computations on road networks through precomputation.
 For a detailed discussion we refer to~\cite{gssv-erlrn-12}.
 Here, we only briefly introduce necessary notation and algorithms used in this paper.
 In a preprocessing phase, vertices are ordered totally by ``importance'' where more important vertices should lie on more shortest paths.
@@ -258,7 +262,7 @@ The set of vertices reachable in $\gchu$ and $\gchd$ is called the \emph{CH sear
 \label{algo:lazy_rphast}
 \end{algorithm2e}
 
-Lazy RPHAST~\cite{strasser_et_al:LIPIcs.SEA.2021.6} is a CH-based algorithm to quickly compute distances from many sources to a single target.
+\emph{Lazy RPHAST}~\cite{strasser_et_al:LIPIcs.SEA.2021.6} is a CH-based algorithm to quickly compute distances from many sources to a single target.
 Lazy RPHAST starts by running Dijkstra's algorithm from $t$ on $\gchd$, similar to a standard CH query.
 The forward search space, however, is explored through a recursive DFS-like search while memoizing distances to $t$ as depicted in Algorithm~\ref{algo:lazy_rphast}.
 This allows reusing the already computed distances for following sources.
@@ -266,7 +270,7 @@ Lazy RPHAST can be used analogously to compute distances from one vertex to many
 We employ Lazy RPHAST as both a many-to-one algorithm and as an A* heuristic.
 Lazy RPHAST as a A* heuristic is called CH-Potentials~\cite{strasser_et_al:LIPIcs.SEA.2021.6}.
 
-Customizable Contraction Hierarchies (CCH)~\cite{dsw-cch-15} is a three-phase variant of CH.
+\emph{Customizable Contraction Hierarchies} (CCH)~\cite{dsw-cch-15} is a three-phase variant of CH.
 It allows fast updates to the preprocessing, for example to integrate information on the current traffic situation.
 However, this only affects the preprocessing.
 The result of the CCH preprocessing is also an augmented graph, only with some additional properties.
@@ -286,7 +290,7 @@ The UBS of a path $P = (v_1, \dots, v_i, \dots, v_j \dots, v_k)$ where $P_{1,i} 
 This is because the stretch of any subpath only decreases when appending optimal segments to the beginning or end.
 
 In~\cite{dss-tarrn-18}, Delling et al. introduce the shortest smooth path problem (SSPP).
-A path $P$ is $\epsilon$-smooth with regards to a metric $w$ when $\ubs_w(P) < 1 + \epsilon$.
+A path $P$ is $\epsilon$-smooth with regards to a weight function $w$ when $\ubs_w(P) < 1 + \epsilon$.
 Given a graph $G$, vertices $s$ and $t$, a smooth weight function $w$ and a volatile weight function $w^*$ and a parameter $\epsilon > 0$, the shortest smooth path problem is to find the shortest path with respect to $w^*$ that is $\epsilon$-smooth with regards to $w$.
 
 \section{Complexity}\label{sec:complexity}
@@ -414,7 +418,7 @@ Thus, the SSPP solution induces a valid solution for the \textsc{HamiltonPath} i
 
 \section{Algorithms}\label{sec:algos}
 
-Delling et al. propose the Iterative Path Blocking (IPB) algorithm to solve the SSPP optimally.
+Delling et al. propose the \emph{Iterative Path Blocking} (IPB) algorithm to solve the SSPP optimally.
 The algorithm repeats two steps until a valid path is found.
 It maintains a set of blocked paths, which is initially empty.
 In the first step, a shortest path with regards to $w^*$ is computed while avoiding any blocked paths.
@@ -443,7 +447,7 @@ In this paper, we propose optimized implementations for both steps based on Lazy
 \draw[->] (s) to [bend right=30] node [midway, below] { 6 } (v);
 \draw[->] (u) to [bend left=30] node [midway, above] { 1, 10 } (t);
 \end{tikzpicture}
-\caption{Example graph where for $\epsilon = 1$ the shortest $\epsilon$-smooth path $(s,v,t)$ is not prefix-optimal. For all arcs except $ut$, the smooth and the volatile metric are equal. For $uv$, the smooth weight is 1 and the volatile weight 10.}
+\caption{Example graph where for $\epsilon = 1$ the shortest $\epsilon$-smooth path $(s,v,t)$ is not prefix-optimal. For all arcs except $ut$, the smooth and the volatile weight function are equal. For $uv$, the smooth weight is 1 and the volatile weight 10.}
 \label{fig:ipb_counterexample}
 \end{figure}
 
@@ -452,7 +456,7 @@ When relaxing an arc $uv$ where $v$ is the endpoint of a blocked path, they back
 Should the paths match, the search is pruned at $v$.
 This algorithm correctly avoids blocked paths.
 However, it also avoids some additional paths because Dijkstra's algorithm by construction only finds prefix-optimal paths.
-But optimal shortest smooth paths may not be prefix-optimal with respect to the volatile metric $w^*$.
+But optimal shortest smooth paths may not be prefix-optimal with respect to the volatile weight function $w^*$.
 See Figure~\ref{fig:ipb_counterexample} for an example.
 To the best of our understanding, IPB as described by Delling et al. will not find the shortest smooth path in this example.
 The algorithm will find the path $(s,u,v,t)$ in the first iteration.
@@ -488,7 +492,7 @@ This allows for efficient subset checks with bit-wise operations.
 Additionally, each vertex maintains its own queue of labels ordered by distance from $s$.
 When the vertex is popped from the queue, it pops the next label from its queue and propagates only this label.
 If there are any remaining labels in the queue, the vertex is reinserted into the global queue.
-Finally, we utilize A* with CCH-Potentials on the volatile metric to guide the search towards the target.
+Finally, we utilize A* with CCH-Potentials on the volatile weight function to guide the search towards the target.
 As our experiments show, disallowing non $\epsilon$-smooth paths increase distances only very little.
 Thus, the heuristic is close to perfect and A* very effective for this problem.
 
@@ -578,10 +582,10 @@ This algorithm can be adopted to efficiently compute other path quality measures
 
 \subsubsection{Worst-Case Running Time}
 
-This algorithm performs great when large segments are shortest paths, which will of course often be the case when searching shortest smooth paths.
-In the worst case however, it still has to check $\Theta(n^2)$ subpath stretches.
+This algorithm performs great when long segments are shortest paths, which will often be the case when searching shortest smooth paths.
+But in the worst case, it still has to check $\Theta(n^2)$ subpath stretches.
 Consider a complete graph with unit weights and the path $P=(v_1, \dots, v_n)$.
-In this graph the shortest path between any two vertices is always the direct arc and the distance is always exactly one.
+In this graph, the shortest path between any two vertices is always the direct arc and the distance is exactly one.
 Thus, the shortest path tree from any vertex is just a star with the direct arcs and our algorithm can only advance by a single vertex in each iteration.
 This results in a worst case running time of $n$ runs of Dijkstra's algorithm.
 
@@ -626,9 +630,9 @@ Recall that Lazy RPHAST allows us to select one target vertex and then to comput
 For the efficient UBS computation, we use two instantiations of this algorithm.
 In each iteration, we select both endpoints of the considered path and compute distances from and to the endpoints for all vertices on the path.
 However, we also need the shortest path trees.
-We propose an extension to Lazy RPHAST to incrementally compute shortest path trees.
+We therefore extend Lazy RPHAST to incrementally compute shortest path trees.
 
-We extend the original Lazy RPHAST algorithm~\ref{algo:lazy_rphast} by additionally storing parent pointers for path unpacking similar to Dijkstra's algorithm.
+We adjust Algorithm~\ref{algo:lazy_rphast} to additionally store parent pointers for path unpacking similar to Dijkstra's algorithm.
 Thus, after having called \texttt{ComputeAndMemoizeDist}, we have the shortest path through the CH search space.
 Algorithm~\ref{algo:lazy_rphast_path} depicts the routine to efficiently unpack shortcuts on this path and retrieve full shortest path trees in the original graph.
 We use a bitvector $\mathtt{U}$ to mark vertices for which the shortest path has already been fully unpacked which is checked before any actual work is performed.
@@ -658,7 +662,7 @@ We implement our algorithms in Rust\footnote{The code for this paper and all exp
 \centering
 \caption{
 Instances used in the evaluation with sequential preprocessing running times to construct a CCH-Potential.
-Phase 1 needs to be run only once for each graph, Phase 2 once for each metric, or when a metric changes.
+Phase 1 needs to be run only once for each graph, Phase 2 once for each weight function, or when a weight function changes.
 }\label{tab:graphs}
 \input{table/graphs.tex}
 \end{table}
@@ -678,7 +682,7 @@ For each road where the average speed is greater than 30\,kph, we reduce the spe
 We evaluate our algorithms by performing batches of point-to-point shortest $\epsilon$-smooth path queries.
 As the distance between source and target has a significant influence on the performance, we generate different query batches.
 For each batch, we pick 1000 source vertices uniformly at random.
-We then run Dijkstra's algorithm from each source vertex on the graph with the smooth metric.
+We then run Dijkstra's algorithm from each source vertex on the graph with the smooth weight function.
 Following the Dijkstra rank methodology, we store every $2^i$th settled vertex~\cite{ss-hhhes-05}.
 This allows evaluating the performance development against varying path lengths.
 In~\cite{adgw-arrn-13}, 1-hour queries were performed.
@@ -747,7 +751,7 @@ Because the length increase numbers are averages over different sets, it is not 
 % When limiting the evaluation to queries where all algorithms finished successfully, the difference between IPB-H and IPB-E almost disappears.
 % The gap to IPF also becomes smaller but remains significant.
 For running times, the averages are also difficult to interpret.
-They are heavily skewed by outliers and there is little reason to assume that they would be normally distributed.
+They are heavily skewed by outliers and there is no reason to assume a normal distribution.
 For example, \emph{median} running times for 1h queries of all algorithms on all instances are all below 2\,ms. % and the differences for the other query sets become only more extreme.
 Clearly, drawing statistically sound conclusions from this experiment requires a closer look.
 
@@ -802,7 +806,7 @@ The difference in average length increase between IPB-E and IPB-H was not becaus
 However, it still fails to answer about 5\% of all queries in less than 10 seconds.
 The running time of IPB-E varies even more strongly.
 On the one hand, many easy queries can be answered in a few milliseconds, but on the other hand, 25\% of all queries cannot be answered in less than 10 seconds.
-The feasibility of solving the problem to exactness with IPB-E strongly depends on the distance of queries and on the smoothness of the $w^*$ metric.
+The feasibility of solving the problem to exactness with IPB-E strongly depends on the distance of queries and on the smoothness of $w^*$.
 
 \begin{table}[t]
 \centering
@@ -828,11 +832,11 @@ The smaller the choice of $\epsilon$, the harder the problem becomes.
 Consequently, the length increase, the number of iterations, the number of blocked paths and the running time increase.
 However, for our implementation of IPB-H, we measure slightly bigger path increases and slightly more iterations.
 Our implementation of IPB-H achieves running times two orders of magnitude faster than the CRP-based IPB-H implementation in~\cite{dss-tarrn-18}.
-One reason for this is our new UBS algorithm which only needs a couple of milliseconds across all values of $\epsilon$.
+One reason for this is our UBS algorithm which only needs a couple of milliseconds for all values of $\epsilon$.
 In~\cite{dss-tarrn-18}, the UBS checking phase takes between 1.3 and 1.9 \emph{seconds}.
-The CH-Potentials based shortest path finding phase is also very efficient across the entire range of $\epsilon$ values.
-Even with many blocked paths, the path lengths increase only little and the CH-Potentials heuristic remains very tight and yields good speed-ups.
-Our exact IPB-E algorithm is still an order of magnitude faster than the IPB-H implementation in~\cite{dss-tarrn-18}.
+The CH-Potentials-based shortest path phase is also very efficient across the entire range of $\epsilon$ values.
+Even with many blocked paths, the path lengths increase only little and the CH-Potentials heuristic remains tight and yields good speed-ups.
+Our exact IPB-E implementation is still an order of magnitude faster than the IPB-H implementation in~\cite{dss-tarrn-18}.
 
 \section{Conclusion}
 
@@ -842,16 +846,16 @@ This algorithm can compute the exact UBS of typically occurring paths with very 
 It outperforms state-of-the-art exact UBS algorithms by around two orders of magnitude and makes computing exact UBS values feasible in practice.
 Also, it can be used for other path quality measures such as local optimality.
 
-We also adapted the existing IPB-H algorithm and realized it with our new UBS algorithm and A* with CH-Potentials.
+We adapted the existing IPB-H algorithm and realized it with our new UBS algorithm and A* with CH-Potentials.
 This realization of IPB-H outperforms the original implementation by two orders of magnitude.
 Also, we present necessary modifications to make the algorithm exact.
-Our exact version is still about an order of magnitude than the CRP-based heuristic implementation.
+IPB-E is still about an order of magnitude faster than the CRP-based heuristic implementation.
 As IPB-H and IPB-E are not always able to find solutions in reasonable time, we introduce another heuristic, IPF.
 IPF can consistently find smooth paths even for random queries on massive continental sized instances in a few tenths of milliseconds.
 
 For future work we would like to apply our algorithms not only to live traffic but also to predicted traffic, i.e. find smooth paths in a time-dependent setting.
 Further, it would be interesting to study what causes IPB-H to be so much faster than IPB-E while retaining most of the quality.
-Maybe this could be traced to specific structures in road networks which then in turn could be exploited to speed up IPB-E.
+Maybe this could be traced to specific structures in road networks which then could be exploited to speed up IPB-E.
 % work around performance problems (circles, expontial number of forb paths - forbid corridors)
 
 % \section{Typesetting instructions -- Summary}
@@ -995,22 +999,21 @@ Maybe this could be traced to specific structures in road networks which then in
 
 \bibliography{references}
 
-% \newpage
 \appendix
 
 \section{Detailed Performance Profiles by Instance}\label{sec:perf_profile_instance}
 
-\begin{figure}
+\begin{figure}[t]
 \centering
-\includegraphics[width=.95\linewidth]{fig/detailed_perf_profile_time.pdf}
+\includegraphics[width=.935\linewidth]{fig/detailed_perf_profile_time.pdf}
 \caption{
 Relative performance profile for the running time of our algorithms on all queries from Table~\ref{tab:data} split by graph and query set.
 }\label{fig:perf_profile_time}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[t]
 \centering
-\includegraphics[width=.95\linewidth]{fig/detailed_perf_profile_quality.pdf}
+\includegraphics[width=.935\linewidth]{fig/detailed_perf_profile_quality.pdf}
 \caption{
 Relative performance profile for solution quality of our algorithms on all queries from Table~\ref{tab:data} split by graph and query set.
 }\label{fig:perf_profile_quality}
