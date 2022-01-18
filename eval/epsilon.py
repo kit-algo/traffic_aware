@@ -21,7 +21,6 @@ queries = pd.DataFrame.from_records([{
 } for run in data for algo in run['algo_runs']])
 
 queries.loc[lambda x: x['algo'] == "iterative_path_fixing", 'total_ubs_time_ms'] = np.nan
-queries.loc[lambda x: x['algo'] == "iterative_path_fixing", 'num_iterations'] += 1 # TODO remove
 
 table = queries.query('~failed').groupby(['epsilon', 'algo']).mean()[['length_increase_percent']].join( \
     queries.groupby(['epsilon', 'algo']) \
