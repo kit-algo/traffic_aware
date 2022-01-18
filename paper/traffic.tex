@@ -413,7 +413,7 @@ Thus, the SSPP solution induces a valid solution for the \textsc{HamiltonPath} i
 
 \section{Algorithms}\label{sec:algos}
 
-Delling et al. propose the \emph{Iterative Path Blocking} (IPB) algorithm to solve the SSPP optimally.
+In~\cite{dss-tarrn-18}, the \emph{Iterative Path Blocking} (IPB) algorithm is proposed to solve the SSPP optimally.
 The algorithm repeats two steps until a valid path is found.
 It maintains a set of blocked paths, which is initially empty.
 In the first step, a shortest path with respect to $w^*$ is computed while avoiding any blocked paths.
@@ -448,14 +448,14 @@ Example graph where for $\epsilon = 1$ the shortest $\epsilon$-smooth path $(s,v
 \label{fig:ipb_counterexample}
 \end{figure}
 
-Delling et al. describe their approach to the first phase as a variant of Dijkstra's algorithm.
+The authors of~\cite{dss-tarrn-18} describe their approach to the first phase as a variant of Dijkstra's algorithm.
 When relaxing an arc $uv$ where $v$ is the endpoint of a blocked path, they backtrack the parent pointers of $v$, comparing the reconstructed path to the blocked path.
 Should the paths match, the search is pruned at $v$.
 This algorithm correctly avoids blocked paths.
 However, it also avoids some additional paths because Dijkstra's algorithm by construction only finds prefix-optimal paths.
 But optimal shortest smooth paths may not be prefix-optimal with respect to the volatile weight function $w^*$.
 See Figure~\ref{fig:ipb_counterexample} for an example.
-To the best of our understanding, IPB as described by Delling et al. will not find the shortest smooth path in this example.
+To the best of our understanding, IPB as described in~\cite{dss-tarrn-18} will not find the shortest smooth path in this example.
 The algorithm will find the path $(s,u,v,t)$ in the first iteration.
 This path is not 1-smooth because $(u,v,t)$ has stretch 3 and $(u,v,t)$ will be added to the blocked path set.
 With $(u,v,t)$ blocked, the algorithm will find the path $(s,u,t)$ in the next iteration and return it as the final result.
@@ -463,7 +463,7 @@ However, the shortest 1-smooth path is $(s,v,t)$.
 It was missed because the prefix $(s,v)$ is not optimal in $w^*$ and was therefore pruned at $v$ by $(s,u,v)$.
 We will refer to this variant from now on by \emph{heuristic iterative path blocking} (IPB-H).
 IPB-H will still find an $\epsilon$-smooth path though it may not necessarily be the shortest.
-Therefore, it is only a heuristic for the SSPP.
+% Therefore, it is only a heuristic for the SSPP.
 
 To find shortest smooth path with Dijkstra's algorithm, we need to adjust the notion of optimality used to compare labels.
 It might be necessary to keep a label with suboptimal distance from the start as in the example from Figure~\ref{fig:ipb_counterexample} where the label for $(s,v)$ needs to be kept at $u$ despite being longer than $(s,u,v)$.
@@ -827,7 +827,7 @@ However, it is the only data available to compare against related work.
 Also note that due to the presence of heavy outliers, performing too few queries can distort the numbers drastically.
 For example, when we ran the same experiment with only 100 queries, the average running times of IPB-H were an order of magnitude faster.
 
-We observe similar trends as Delling et al.
+We observe similar trends as the authors of~\cite{dss-tarrn-18}.
 The smaller the choice of $\epsilon$, the harder the problem becomes.
 Consequently, the length increase, the number of iterations, the number of blocked paths and the running time increase.
 However, for our implementation of IPB-H, we measure slightly bigger path increases and slightly more iterations.
