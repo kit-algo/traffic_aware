@@ -96,8 +96,7 @@ We then present practical algorithms to solve the problem on continental-sized r
 A crucial building block of these algorithms is the UBS evaluation.
 We propose a novel algorithm to compute the UBS with only a few shortest path computations on typical paths.
 All our algorithms utilize Lazy RPHAST, a recently proposed technique to incrementally compute distances from many vertices towards a common target.
-An extensive evaluation shows that our algorithms outperform competing SSPP algorithms by at least an order of magnitude.
-It also shows that our new UBS algorithm outperforms existing approaches by two orders of magnitude and is the first to compute exact UBS values in a matter of milliseconds.
+An extensive evaluation shows that our algorithms outperform competing SSPP algorithms by up to two orders of magnitude and that our new UBS algorithm is the first to consistently compute exact UBS values in a matter of milliseconds.
 \end{abstract}
 
 \newpage
@@ -157,8 +156,8 @@ However, it has two issues:
 First, it takes several seconds even on short-range queries.
 This makes it unsuitable for practical applications.
 Second, as we show in this work, it is, in fact, not exact.
-The authors also present a heuristic algorithm based on the via node paradigm, i.e. it finds solutions which are concatenations of two shortest paths.
-It is much faster but may find paths containing forbidden detours because the UBS is checked heuristically.
+The authors also present a heuristic algorithm based on the via-node paradigm, i.e. it finds solutions which are concatenations of two shortest paths.
+It is much faster but may miss promising paths because only via-paths are considered and the UBS is checked heuristically.
 We are not aware of any other works studying the SSPP.
 
 In the SSPP, limiting the relative length of detours is formalized with the \emph{uniformly bounded stretch} (UBS).
@@ -186,7 +185,7 @@ Fourth, we present an efficient algorithm to compute exact UBS values, typically
 Fifth, we present Iterative Path Fixing, a new SSPP heuristic.
 All our algorithms utilize Lazy RPHAST as a crucial ingredient to achieve fast running times.
 Section~\ref{sec:eval} contains a thorough evaluation of our algorithms.
-It clearly shows the effectiveness of our UBS algorithm and our CH-Potentials-based IPB realization, outperforming the state of the art by around two orders of magnitude.
+It clearly shows the effectiveness of our UBS algorithm and our CH-Potentials-based IPB realization, outperforming the state of the art by up to two orders of magnitude.
 
 \section{Preliminaries}
 \label{sec:prelim}
