@@ -48,7 +48,12 @@
 
 %\funding{(Optional) general funding statement \dots}%optional, to capture a funding statement, which applies to all authors. Please enter author specific funding statements as fifth argument of the \author macro.
 
-\acknowledgements{I want to thank my colleagues for from the scalable algorithms group Christopher Weyand, Marcus Wilhelm and Thomas Bläsius for pointing out a crucial fact on subpath-optimality at our group workshop. Further, I want to thank my colleague Jonas Sauer for many helpful discussions on algorithmic ideas and proofreading of early drafts of this paper.}%optional
+\acknowledgements{
+I want to thank my colleagues for from the scalable algorithms group Christopher Weyand, Marcus Wilhelm and Thomas Bläsius for pointing out a crucial fact on subpath-optimality at our group workshop.
+Further, I want to thank my colleague Jonas Sauer for many helpful discussions on algorithmic ideas and proofreading of early drafts of this paper.
+I also want to thank the anonymous reviewers for their helpful comments.
+Finally, I would like to thank Jakob Bussas who did a proof-of-concept implementation of the ideas presented here for his bachelor's thesis.
+}%optional
 
 %\nolinenumbers %uncomment to disable line numbering
 
@@ -91,15 +96,13 @@ We study the shortest smooth path problem (SSPP), which is motivated by traffic-
 The goal is to compute the fastest route according to the current traffic situation while avoiding undesired detours, such as briefly using a parking area to bypass a jammed highway.
 Detours are prevented by limiting the uniformly bounded stretch (UBS) with respect to a second weight function which disregards the traffic situation.
 The UBS is a path quality metric which measures the maximum relative length of detours on a path.
-In this paper, we settle the complexity of the SSPP and show that it is strongly $\mathcal{NP}$-complete.
+In this paper, we settle the complexity of the SSPP and show that it is strongly \textsf{NP}-complete.
 We then present practical algorithms to solve the problem on continental-sized road networks.
 A crucial building block of these algorithms is the UBS evaluation.
 We propose a novel algorithm to compute the UBS with only a few shortest path computations on typical paths.
 All our algorithms utilize Lazy RPHAST, a recently proposed technique to incrementally compute distances from many vertices towards a common target.
 An extensive evaluation shows that our algorithms outperform competing SSPP algorithms by up to two orders of magnitude and that our new UBS algorithm is the first to consistently compute exact UBS values in a matter of milliseconds.
 \end{abstract}
-
-\newpage
 
 \section{Introduction}
 
@@ -176,7 +179,7 @@ To the best of our knowledge, this goal has not been achieved to this day.
 % Section~\ref{sec:prelim} contains notation and recapitulates existing algorithms we build upon.
 % Our paper contains the following contributions:
 % We settle the question of the complexity of the SSPP.
-In Section~\ref{sec:complexity}, we settle the complexity of the SSPP by proving that it is strongly $\mathcal{NP}$-complete.
+In Section~\ref{sec:complexity}, we settle the complexity of the SSPP by proving that it is strongly \textsf{NP}-complete.
 Section~\ref{sec:algos} contains algorithmic results.
 First, we show that IPB as described in~\cite{dss-tarrn-18} may not find optimal results.
 Second, we describe necessary adjustments to make it exact.
@@ -242,7 +245,7 @@ The set of vertices reachable in $\gchu$ and $\gchd$ is called the \emph{CH sear
         $\mathtt{D}[u]\leftarrow \mathtt{D}^{\downarrow}[u]$\;
         \For{all arcs $uv$ in $\gchu$}{
             $d \leftarrow \Dist(v)$\;
-            \If{$\mathtt{D}[u] < d + w(uv)$}{
+            \If{$d + w(uv) < \mathtt{D}[u]$}{
                 $\mathtt{D}[u] \leftarrow d + w(uv)$\;
                 % $\mathtt{P}[u] \leftarrow v$\;
             }
@@ -274,7 +277,7 @@ For a detailed discussion of the differences between CH and CCH and the changes 
 \subsection{Smooth Paths}
 
 The \emph{stretch} of a path is defined as $S_w(P) = \frac{w(P)}{\dist_w(v_1, v_k)}$, i.e. the ratio between the path length and the shortest distance between its endpoints.
-The \emph{uniformly bounded stretch} $\ubs_w(P) = \max_{0 \leq i < j \leq k}S(P_{i,j})$ indicates the maximum stretch over all subpaths.
+The \emph{uniformly bounded stretch} $\ubs_w(P) = \max_{0 \leq i < j \leq k}S_w(P_{i,j})$ indicates the maximum stretch over all subpaths.
 We observe the following useful property of UBS:
 \begin{observation}\label{obs:append_sp_ubs}
 The UBS of a path $P = (v_1, \dots, v_i, \dots, v_j \dots, v_k)$ where $P_{1,i} = \shp(v_1, v_i)$ and $P_{j,k} = \shp(v_j, v_k)$ is equal to $\ubs(P_{i,j})$.
@@ -287,21 +290,21 @@ Given a graph $G$, vertices $s$ and $t$, a smooth weight function $w$ and a vola
 
 \section{Complexity}\label{sec:complexity}
 
-In this section, we prove that SSPP is strongly $\mathcal{NP}$-complete for any $\epsilon \in \mathbb{Q}^{>0}$.
+In this section, we prove that SSPP is strongly \textsf{NP}-complete for any $\epsilon \in \mathbb{Q}^{>0}$.
 We define the decision variant of the problem as follows:
-An instance $(G, w, w^*, s, t, k)$ is a \emph{yes} instance of $\epsilon$-\textsc{ShortestSmoothPath-Dec} if and only if there exists a path $P = (s,\dots, t)$ in $G$ with $w^*(P) \leq k$ and $\ubs_w(P) < 1 + \epsilon$.
+An instance $(G, w, w^*, s, t, k)$ of the of $\epsilon$-\textsc{ShortestSmoothPath-Dec} problem admits a feasible solution if and only if there exists a path $P = (s,\dots, t)$ in $G$ with $w^*(P) \leq k$ and $\ubs_w(P) < 1 + \epsilon$.
 
 \begin{theorem}
-\textsc{ShortestSmoothPath-Dec} is strongly $\mathcal{NP}$-complete.
+$\epsilon$-\textsc{ShortestSmoothPath-Dec} is strongly \textsf{NP}-complete for any $\epsilon \in \mathbb{Q}^{>0}$.
 \end{theorem}
 
 \begin{proof}
 A solution can be verified in polynomial time.
 Determining the path weight in $w^*$ takes running time linear in $\mathcal{O}(|P|)$.
 To check the UBS, shortest distances have to be computed for all $\mathcal{O}(|P|^2)$ subpaths.
-This shows that \textsc{ShortestSmoothPath-Dec} $\in \mathcal{NP}$.
+This shows that \textsc{ShortestSmoothPath-Dec} $\in \mathsf{NP}$.
 
-To prove the hardness, we give a reduction from the strongly $\mathcal{NP}$-complete \textsc{HamiltonPath} problem~\cite{gj-ci-79}.
+To prove the hardness, we give a reduction from the strongly \textsf{NP}-complete \textsc{HamiltonPath} problem~\cite{gj-ci-79}.
 The goal is to find a \emph{Hamiltonian} path, i.e. a simple path which traverses every vertex exactly once.
 Let $G=(V,A)$ be the \textsc{HamiltonPath} instance.
 To distinguish them from the vertices in the SSPP instance, we will denote the vertices in the \textsc{HamiltonPath} instance as \emph{nodes}.
@@ -378,7 +381,7 @@ In both weight functions, all arcs $a_{\operatorname{term}} \in A_{\operatorname
 The arcs in $a_{\operatorname{self}} \in A_{\operatorname{self}}$ get a smooth weight $w(a_{\operatorname{self}}) = 1$ and a volatile weight $w^*(a_{\operatorname{self}}) = 2$.
 The arcs in $a_{\operatorname{orig}} \in A_{\operatorname{orig}}$ get a smooth weight $w(a_{\operatorname{orig}}) = 1+\epsilon$ and a volatile weight $w^*(a_{\operatorname{orig}}) = 1$.
 Setting $k=|V|+1$, this forms our \textsc{ShortestSmoothPath-Dec} instance.
-This transformation has quadratic running time.
+This transformation has a running time in $\mathcal{O}(n\cdot(n+m))$.
 See Figure~\ref{fig:transformation} for an illustrated example of the construction.
 For the sake of readability, we use non-integer weights of $1+\epsilon$ in this proof.
 The weights can be turned into integers by multiplying them with the denominator of $\epsilon$.
@@ -392,12 +395,12 @@ Due to Observation~\ref{obs:append_sp_ubs}, it is sufficient to show that the UB
 For any subpath $P''_{i,j} = (u^i, \dots v^j)$ for $i < j$, $u$ must not be equal to $v$ because $P$ is a Hamiltonian path.
 As all arcs are from $A_{\operatorname{orig}}$, $w(P''_{i,j}) = (j-i) \cdot (1+\epsilon)$.
 The shortest path (with respect to $w$) between $u^i$ and $v^j$ has to use at least one $A_{\operatorname{orig}}$ arc because $u \neq v$.
-Thus, $\dist_w(P''_{i,j}) \geq (i - j - 1) + (1 + \epsilon)$.
+Thus, $\dist_w(P''_{i,j}) \geq (j - i - 1) + (1 + \epsilon)$.
 This yields
 \[
 \ubs_w(P''_{i,j}) = \frac{w(P''_{i,j})}{\dist_w(P''_{i,j})} \leq \frac{(j-i) \cdot (1+\epsilon)}{j-i+\epsilon} < \frac{(j-i) \cdot (1+\epsilon)}{j-i} = 1 + \epsilon
 \]
-which proves that $P'$ is valid solution for the SSPP instance.
+which proves that $P'$ is a valid solution for the SSPP instance.
 
 Conversely, suppose that our SSPP instance has an $\epsilon$-smooth path $P' = (s, v_1^1, \dots, v_n^n, t)$ of weight $w^*(P') = |V|+1$.
 Such a path cannot contain any arcs from $A_{\operatorname{self}}$ because their volatile weight is 2.
@@ -442,7 +445,7 @@ In this paper, we propose optimized implementations for both steps based on Lazy
 \draw[->] (u) to [bend left=30] node [midway, above] { 1, 10 } (t);
 \end{tikzpicture}
 \caption{
-Example graph where for $\epsilon = 1$ the shortest $\epsilon$-smooth path $(s,v,t)$ is not prefix-optimal. For all arcs except $ut$, the smooth and the volatile weight function are equal. For $uv$, the smooth weight is 1 and the volatile weight 10.
+Example graph where for $\epsilon = 1$ the shortest $\epsilon$-smooth path $(s,v,t)$ is not prefix-optimal. For all arcs except $ut$, the smooth and the volatile weight function are equal. For $ut$, the smooth weight is 1 and the volatile weight 10.
 }
 \label{fig:ipb_counterexample}
 \end{figure}
@@ -465,9 +468,9 @@ IPB-H will still find an $\epsilon$-smooth path though it may not necessarily be
 % Therefore, it is only a heuristic for the SSPP.
 
 To find shortest smooth path with Dijkstra's algorithm, we need to adjust the notion of optimality used to compare labels.
-It might be necessary to keep a label with suboptimal distance from the start as in the example from Figure~\ref{fig:ipb_counterexample} where the label for $(s,v)$ needs to be kept at $u$ despite being longer than $(s,u,v)$.
+It might be necessary to keep a label with suboptimal distance from the start as in the example from Figure~\ref{fig:ipb_counterexample} where the label for $(s,v)$ needs to be kept at $v$ despite being longer than $(s,u,v)$.
 This leads to a \emph{label-correcting} variation of Dijkstra's algorithm with possibly multiple labels per vertex.
-A \emph{label} $l$ at a vertex $v$ consists of a distance from the source $\mathtt{D}_l$, a set of active blocked paths $\mathtt{A}_l$, and a pointer to the parent vertex and label for efficient reconstruction of the labels' path $P(l) = (s,\dots,v)$.
+A \emph{label} $l$ at a vertex $v$ consists of a distance $\mathtt{D}_l$ from the source, a set of active blocked paths $\mathtt{A}_l$, and a pointer to the parent vertex and label for efficient reconstruction of the labels' path $P(l) = (s,\dots,v)$.
 The active blocked path set $\mathtt{A}_l$ contains all blocked paths which have a prefix which is a suffix of $P(l)$.
 A label $l$ can be discarded when $v$ has another label $l'$ with $\mathtt{D}_{l'} \leq \mathtt{D}_l$ and $\mathtt{A}_{l'} \subseteq \mathtt{A}_l$.
 
@@ -476,15 +479,17 @@ When a vertex $u$ with a label $l_u$ is popped from the queue and an arc $uv$ is
 We set the distance $\mathtt{D}_{l_v} = \mathtt{D}_{l_u} + w^*(uv)$ and the parent label to $l_u$.
 We also need to keep track of traversed blocked paths.
 If $uv$ is the first arc of a blocked path $B = (u,v,\dots)$, the path $B$ needs to be added to $\mathtt{A}_{l_v}$.
-For any active blocked path $B = (\dots, u, w, \dots) \in \mathtt{A}_{l_u}$, we need to check if $w=v$, i.e. $uv$ lies on $B$.
+For any active blocked path $B = (\dots, u, x, \dots) \in \mathtt{A}_{l_u}$, we need to check if $x=v$, i.e. $uv$ lies on $B$.
 If this is the case, $B$ is contained in $\mathtt{A}_{l_v}$, or, if $uv$ is the last arc of $B$, the label $l_v$ must be dropped.
 If $uv$ is not on $B$, the blocked path is not in $\mathtt{A}_{l_v}$.
 
 An efficient implementation of this algorithm requires careful engineering.
 For each arc, we keep track of the blocked paths it lies on.
 Labels use a bitset to store the active blocked paths.
-The bitsets are limited to the paths relevant for the current vertex.
 This allows for efficient subset checks with bit-wise operations.
+The bitset size is determined individually for each vertex by the number of blocked paths the respective vertex lies on.
+In our implementation, we use at least one 128-bit integer which suffices for most queries.
+Should the number of blocked paths for a vertex exceed 128, we switch to using a dynamically sized array of integers for that vertex.
 Additionally, each vertex maintains its own queue of labels ordered by distance from $s$.
 When the vertex is popped from the queue, it pops the next label from its queue and propagates only this label.
 If there are any remaining labels in the queue, the vertex is reinserted into the global queue.
@@ -612,7 +617,7 @@ Thus, computing the UBS of the whole path without checking all $\Theta(n^2)$ str
         \If{$(u, \mathtt{P}[u])$ is a shortcut for $(u, v, \mathtt{P}[u])$}{
             $\mathtt{P}[v] \leftarrow \mathtt{P}[u]$\;
             $\Unpack(v)$\;
-            $\mathtt{P}[u] \leftarrow w$\;
+            $\mathtt{P}[u] \leftarrow v$\;
             $\Unpack(u)$\;
         }
         $\mathtt{U}[u] \leftarrow \True$\;
@@ -634,7 +639,7 @@ Dijkstra's algorithm on $\gchd$ yields initial parent pointers.
 We adjust Algorithm~\ref{algo:lazy_rphast} to continue to maintain these parent pointers and update them during arc relaxation.
 Thus, after having called \texttt{ComputeAndMemoizeDist}, we have the shortest path through the CH search space in $G^+$.
 Algorithm~\ref{algo:lazy_rphast_path} depicts the routine to efficiently unpack shortcuts on this path and retrieve full shortest path trees in the original graph.
-We use a bitvector $\mathtt{U}$ to mark vertices for which the shortest path has already been fully unpacked which is checked before any actual work is performed.
+We use a bitvector $\mathtt{U}$ (using a clearlist for fast reinitialization) to mark vertices for which the shortest path has already been fully unpacked which is checked before any actual work is performed.
 Then, we have to call \texttt{ComputeAndMemoizeDist} to ensure that the path through the CH search space has been obtained for $u$.
 For vertices encountered through recursive shortcut unpacking this might have not happened before.
 In the next step, we can now recursively unpack the full path up to the parent $\mathtt{P}[u]$ of our current vertex $u$.
@@ -667,10 +672,10 @@ Phase 1 needs to be run only once for each graph, Phase 2 once for each weight f
 \end{table}
 
 Table~\ref{tab:graphs} shows the road networks we use in our experiments alongside sequential preprocessing times.
-OSM Europe is the same network used in~\cite{dss-tarrn-18} and publicly available\footnote{\url{https://i11www.iti.kit.edu/resources/roadgraphs.php}}.
+OSM Europe is the same network used in~\cite{dss-tarrn-18} and publicly available.\footnote{\url{https://i11www.iti.kit.edu/resources/roadgraphs.php}}
 The DIMACS Europe instance was made available by PTV\footnote{\url{https://ptvgroup.com}} for the 9th DIMACS implementation challenge~\cite{DemetrescuGJ09}.
 It is not publicly available but can be obtained on request for research purposes\footnote{\url{https://i11www.iti.kit.edu/resources/roadgraphs.php}}.
-We derived the OSM Germany instance from an early 2020 snapshot of OpenStreetMap and converted into a routing graph using RoutingKit\footnote{\url{https://github.com/RoutingKit/RoutingKit}}.
+We derived the OSM Germany instance from an early 2020 snapshot of OpenStreetMap and converted into a routing graph using RoutingKit.\footnote{\url{https://github.com/RoutingKit/RoutingKit}}
 For this instance, we have proprietary traffic data provided by Mapbox\footnote{\url{https://mapbox.com}} which, unfortunately, we cannot provide.
 The data includes two live traffic snapshots in the form of OSM node ID pairs and live speeds for the edge between the vertices.
 One is from Friday 2019/08/02 afternoon and contains 320K vertex pairs and the other from Tuesday 2019/07/16 morning and contains 185K pairs.
@@ -689,7 +694,7 @@ For comparison, we also generate an \emph{1h} batch by picking the first settled
 In addition, we generate a \emph{4h} batch for medium-range queries with the same method and a \emph{random} batch for long range queries where the target is picked uniformly at random.
 
 Preliminary experiments showed that some queries take prohibitively long to answer.
-Since we are solving an $\mathcal{NP}$-hard problem, this is not very surprising.
+Since we are solving an \textsf{NP}-hard problem, this is not very surprising.
 We abort queries if the algorithm has not found a path with $\ubs < (1+\epsilon)$ after 10 seconds.
 We report these queries as failed but, nevertheless, do include their running times in our measurements.
 
@@ -839,7 +844,7 @@ Our exact IPB-E implementation is still an order of magnitude faster than the IP
 
 \section{Conclusion}
 
-In this paper, we studied the shortest smooth path problem and proved its $\mathcal{NP}$-completeness.
+In this paper, we studied the shortest smooth path problem and proved its \textsf{NP}-completeness.
 We introduced a new algorithm for practically efficient UBS computation.
 This algorithm can compute the exact UBS of typically occurring paths with very few shortest path computations.
 It outperforms state-of-the-art exact UBS algorithms by around two orders of magnitude and makes computing exact UBS values feasible in practice.
