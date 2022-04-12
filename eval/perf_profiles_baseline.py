@@ -31,28 +31,31 @@ queries['instance'] = queries['graph'].map({'OSM Europe': 'OSM Eur ', 'DIMACS Eu
 queries['queries'] = queries['queries'].map({ 'queries/1h': '1h', 'queries/4h': '4h', 'queries/uniform': 'Random' })
 queries['algo'] = queries['algo'].map(algo_names)
 
-queries = queries.loc[lambda x: x['algo'].isin(algo_selection)]
-
 instance_order = ['DIMACS Eur Syn', 'OSM Eur Syn', 'OSM Ger Fri', 'OSM Ger Tue']
 query_order = ['1h', '4h', 'Random']
 algo_order = algo_selection
 
-per_query_grouper = ['queries', 'instance', 'epsilon', 'from', 'to']
-best_values = queries.query('~failed').groupby(per_query_grouper)[['running_time_ms', 'length_increase_percent']].min()
-queries = queries.join(best_values, on=per_query_grouper, rsuffix='_min')
+queries_time = queries.loc[lambda x: x['algo'].isin(algo_selection)]
 
-queries['time_perf'] = queries.query('~failed')['running_time_ms'] / queries.query('~failed')['running_time_ms_min']
+per_query_grouper = ['queries', 'instance', 'epsilon', 'from', 'to']
+fastest = queries_time.query('~failed & algo != "OPT_w"').groupby(per_query_grouper)[['running_time_ms']].min()
+queries_time = queries_time.join(fastest, on=per_query_grouper, rsuffix='_min')
+best_result = queries.query('~failed').groupby(per_query_grouper)[['length_increase_percent']].min()
+queries = queries.join(best_result, on=per_query_grouper, rsuffix='_min')
+
+queries_time['time_perf'] = queries_time.query('~failed')['running_time_ms'] / queries_time.query('~failed')['running_time_ms_min']
+queries_time['time_perf'] = queries_time['time_perf'].fillna(np.inf)
 queries['len_perf'] = (queries.query('~failed')['length_increase_percent'] + 100) / (queries.query('~failed')['length_increase_percent_min'] + 100)
-queries['time_perf'] = queries['time_perf'].fillna(np.inf)
 queries['len_perf'] = queries['len_perf'].fillna(np.inf)
 
-sub = queries.query("~(graph == 'OSM Germany' & metric == 'fake_traffic') & epsilon == 0.2")
-sub['len_ratio'] = sub.groupby('algo')['len_perf'].transform(lambda group: np.sum(np.subtract.outer(group.values,group.values)>=0, axis=1) / group.count())
-sub['time_ratio'] = sub.groupby('algo')['time_perf'].transform(lambda group: np.sum(np.subtract.outer(group.values,group.values)>=0, axis=1) / group.count())
+sub_time = queries_time.query("~(graph == 'OSM Germany' & metric == 'fake_traffic') & epsilon == 0.2")
+sub_time['time_ratio'] = sub_time.groupby('algo')['time_perf'].transform(lambda group: np.sum(np.subtract.outer(group.values,group.values)>=0, axis=1) / group.count())
+sub_len = queries.query("~(graph == 'OSM Germany' & metric == 'fake_traffic') & epsilon == 0.2")
+sub_len['len_ratio'] = sub_len.groupby('algo')['len_perf'].transform(lambda group: np.sum(np.subtract.outer(group.values,group.values)>=0, axis=1) / group.count())
 
 fig, axs = plt.subplots(1, 2, figsize=(11,4), sharey=True)
 
-g = sns.lineplot(data=sub, x='time_perf', y='time_ratio', hue='algo', hue_order=algo_order, drawstyle='steps-post', ax=axs[0], legend=False)
+g = sns.lineplot(data=sub_time, x='time_perf', y='time_ratio', hue='algo', hue_order=algo_order, drawstyle='steps-post', ax=axs[0], legend=False)
 g.set(xscale="log")
 g.set_xlabel('Slowdown over fastest')
 g.set_ylabel('Fraction of queries')
@@ -63,27 +66,27 @@ g.set_xlim(0.95, max_x)
 for line in g.get_lines()[:3]:
     (x, y) = line.get_data()
     line.set_data(np.append(x, [max_x]), np.append(y, [y[-1]]))
-
-g = sns.lineplot(data=sub, x='len_perf', y='len_ratio', hue='algo', hue_order=algo_order, drawstyle='steps-post', ax=axs[1])
+    
+g = sns.lineplot(data=sub_len, x='len_perf', y='len_ratio', hue='algo', hue_order=extended_algo_selection, drawstyle='steps-post', ax=axs[1])
 g.set_xlabel('Length increase factor over best found')
 g.set_ylabel('Fraction of queries')
 g.legend(title='Algorithm', loc='lower right')
 max_x = g.get_xlim()[1]
 g.set_xlim(0.99, max_x)
 #g.set_ylim(-0.05, 1.05)
-for line in g.get_lines()[:3]:
+for line in g.get_lines()[:4]:
     (x, y) = line.get_data()
     line.set_data(np.append(x, [max_x]), np.append(y, [y[-1]]))
-
+    
 plt.tight_layout()
 g.get_figure().savefig('paper/fig/combined_perf_profile.pdf')
 
 
 
-sub['time_ratio'] = sub.groupby(['algo', 'instance', 'queries', 'epsilon'])['time_perf'].transform(lambda group: np.sum(np.subtract.outer(group.values,group.values)>=0, axis=1) / group.count())
-sub['len_ratio'] = sub.groupby(['algo', 'instance', 'queries', 'epsilon'])['len_perf'].transform(lambda group: np.sum(np.subtract.outer(group.values,group.values)>=0, axis=1) / group.count())
+sub_time['time_ratio'] = sub_time.groupby(['algo', 'instance', 'queries', 'epsilon'])['time_perf'].transform(lambda group: np.sum(np.subtract.outer(group.values,group.values)>=0, axis=1) / group.count())
+sub_len['len_ratio'] = sub_len.groupby(['algo', 'instance', 'queries', 'epsilon'])['len_perf'].transform(lambda group: np.sum(np.subtract.outer(group.values,group.values)>=0, axis=1) / group.count())
 
-g = sns.FacetGrid(sub, margin_titles=True, legend_out=False,
+g = sns.FacetGrid(sub_time, margin_titles=True, legend_out=False,
                   row='queries', col='instance', hue='algo', row_order=query_order, col_order=instance_order, hue_order=algo_order)
 g.map_dataframe(sns.lineplot, x='time_perf', y='time_ratio', drawstyle='steps-post')
 g.set(xscale="log")
@@ -106,8 +109,8 @@ plt.tight_layout()
 g.savefig('paper/fig/detailed_perf_profile_time.pdf')
 
 
-g = sns.FacetGrid(sub, margin_titles=True, ylim=(-0.05,1.05), legend_out=False,
-                 row='queries', col='instance', hue='algo', row_order=query_order, col_order=instance_order, hue_order=algo_order)
+g = sns.FacetGrid(sub_len, margin_titles=True, ylim=(-0.05,1.05), legend_out=False,
+                 row='queries', col='instance', hue='algo', row_order=query_order, col_order=instance_order, hue_order=extended_algo_selection)
 g.map_dataframe(sns.lineplot, x='len_perf', y='len_ratio', drawstyle='steps-post')
 g.set_titles(col_template="{col_name}", row_template="{row_name}")
 g.set_xlabels('Length increase factor over best')
