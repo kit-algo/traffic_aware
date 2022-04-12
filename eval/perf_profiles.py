@@ -36,7 +36,9 @@ query_order = ['1h', '4h', 'Random']
 algo_order = algo_selection
 
 per_query_grouper = ['queries', 'instance', 'epsilon', 'from', 'to']
-best_values = queries.query('~failed').groupby(per_query_grouper)[['running_time_ms', 'length_increase_percent']].min()
+fastest = queries.query('~failed & algo != "OPT_w"').groupby(per_query_grouper)[['running_time_ms']].min()
+best_result = queries.query('~failed').groupby(per_query_grouper)[['length_increase_percent']].min()
+best_values = fastest.merge(best_result, left_index=True, right_index=True)
 queries = queries.join(best_values, on=per_query_grouper, rsuffix='_min')
 
 queries['time_perf'] = queries.query('~failed')['running_time_ms'] / queries.query('~failed')['running_time_ms_min'] 
@@ -62,7 +64,7 @@ for line in g.get_lines()[:3]:
     (x, y) = line.get_data()
     line.set_data(np.append(x, [max_x]), np.append(y, [y[-1]]))
     
-g = sns.lineplot(data=sub, x='len_perf', y='len_ratio', hue='algo', hue_order=algo_order, drawstyle='steps-post', ax=axs[1])
+g = sns.lineplot(data=sub, x='len_perf', y='len_ratio', hue='algo', hue_order=extended_algo_selection, drawstyle='steps-post', ax=axs[1])
 g.set_xlabel('Length increase factor over best found')
 g.set_ylabel('Fraction of queries')
 g.legend(title='Algorithm', loc='lower right')
@@ -105,7 +107,7 @@ g.savefig('paper/fig/detailed_perf_profile_time.pdf')
 
 
 g = sns.FacetGrid(sub, margin_titles=True, ylim=(-0.05,1.05), legend_out=False,
-                 row='queries', col='instance', hue='algo', row_order=query_order, col_order=instance_order, hue_order=algo_order)
+                 row='queries', col='instance', hue='algo', row_order=query_order, col_order=instance_order, hue_order=extended_algo_selection)
 g.map_dataframe(sns.lineplot, x='len_perf', y='len_ratio', drawstyle='steps-post')
 g.set_titles(col_template="{col_name}", row_template="{row_name}")
 g.set_xlabels('Length increase factor over best')
