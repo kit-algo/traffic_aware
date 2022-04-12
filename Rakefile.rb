@@ -59,6 +59,14 @@ namespace "table" do
   end
 end
 
+osm_ger = "#{data_dir}/osm_ger/"
+dimacs_eur = "#{data_dir}/europe/"
+osm_eur = "#{data_dir}/osm_eur14/"
+
+fake = 'fake_traffic'
+lite = 'lite_traffic'
+heavy = 'heavy_traffic'
+
 osm_ger_src = 'https://download.geofabrik.de/europe/germany-200101.osm.pbf'
 osm_ger_src_file = "#{data_dir}/germany-200101.osm.pbf"
 osm_eur_src = 'http://i11www.iti.kit.edu/extra/free_roadgraphs/osm-eur.zip'
@@ -73,14 +81,6 @@ osm_eur_co = "#{osm_eur}/osm-eur.co"
 # osm_eur_src_file = "#{data_dir}/osm-bawu.zip"
 # osm_eur_gr = "#{osm_eur}/osm-bawu.gr"
 # osm_eur_co = "#{osm_eur}/osm-bawu.co"
-
-osm_ger = "#{data_dir}/osm_ger/"
-dimacs_eur = "#{data_dir}/europe/"
-osm_eur = "#{data_dir}/osm_eur14/"
-
-fake = 'fake_traffic'
-lite = 'lite_traffic'
-heavy = 'heavy_traffic'
 
 graphs = if only_public
   [[osm_ger, [fake]], [osm_eur, [fake]]]
