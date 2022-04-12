@@ -209,6 +209,7 @@ namespace "exp" do
           [0.2, 0.5].each do |epsilon|
             ['1h', '4h', 'uniform'].each do |queries|
               sh "cargo run --release --bin cchpot_traffic_aware -- #{graph} #{epsilon} #{metric} queries/#{queries} > #{exp_dir}/data/$(date --iso-8601=seconds).json"
+              sh "cargo run --release --bin cchpot_traffic_aware_baseline -- #{graph} #{epsilon} #{metric} queries/#{queries} > #{exp_dir}/data/$(date --iso-8601=seconds).json"
             end
           end
         end
