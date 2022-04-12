@@ -38,12 +38,13 @@
 
 \keywords{realistic road networks, route planning, shortest paths, traffic-aware routing, live traffic, uniformly bounded stretch}%TODO mandatory; please add comma-separated list of keywords
 
-\category{} %optional, e.g. invited paper
+% \category{} %optional, e.g. invited paper
 
-\relatedversion{} %optional, e.g. full version hosted on arXiv, HAL, or other respository/website
+% \relatedversion{} %optional, e.g. full version hosted on arXiv, HAL, or other respository/website
 %\relatedversiondetails[linktext={opt. text shown instead of the URL}, cite=DBLP:books/mk/GrayR93]{Classification (e.g. Full Version, Extended Version, Previous Version}{URL to related version} %linktext and cite are optional
 
-%\supplement{}%optional, e.g. related research data, source code, ... hosted on a repository like zenodo, figshare, GitHub, ...
+% \supplement{}%optional, e.g. related research data, source code, ... hosted on a repository like zenodo, figshare, GitHub, ...
+\supplementdetails[subcategory={Source Code}]{Software}{https://github.com/kit-algo/traffic_aware}
 %\supplementdetails[linktext={opt. text shown instead of the URL}, cite=DBLP:books/mk/GrayR93, subcategory={Description, Subcategory}, swhid={Software Heritage Identifier}]{General Classification (e.g. Software, Dataset, Model, ...)}{URL to related version} %linktext, cite, and subcategory are optional
 
 %\funding{(Optional) general funding statement \dots}%optional, to capture a funding statement, which applies to all authors. Please enter author specific funding statements as fifth argument of the \author macro.
@@ -60,17 +61,17 @@ Finally, I would like to thank Jakob Bussas who did a proof-of-concept implement
 
 
 %Editor-only macros:: begin (do not touch as author)%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\EventEditors{John Q. Open and Joan R. Access}
+\EventEditors{Christian Schulz and Bora U\c{c}ar}
 \EventNoEds{2}
-\EventLongTitle{42nd Conference on Very Important Topics (CVIT 2016)}
-\EventShortTitle{CVIT 2016}
-\EventAcronym{CVIT}
-\EventYear{2016}
-\EventDate{December 24--27, 2016}
-\EventLocation{Little Whinging, United Kingdom}
+\EventLongTitle{20th International Symposium on Experimental Algorithms (SEA 2022)}
+\EventShortTitle{SEA 2022}
+\EventAcronym{SEA}
+\EventYear{2022}
+\EventDate{July 25--27, 2022}
+\EventLocation{Heidelberg, Germany}
 \EventLogo{}
-\SeriesVolume{42}
-\ArticleNo{23}
+\SeriesVolume{233}
+\ArticleNo{3}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \newcommand*{\dist}{\mathcal{D}}
@@ -117,7 +118,7 @@ As traffic feeds are derived from live data, they are inherently noisy and incom
 Simply exchanging free flow for live traffic travel times and then solving the classical shortest path problem may lead to problematic routes.
 For example, such routes may include undesired detours such as briefly using a parking area to bypass a jammed highway.
 % Another problem is when an alternative route around a traffic jam is suggested but the alternative is congested, too, despite this not being represented in the routing data due to a low-quality traffic feed.
-
+\newpage
 We therefore study an extended problem model, the \emph{shortest smooth path problem} (SSPP)~\cite{dss-tarrn-18}.
 To avoid undesired detours, a second weight function is taken into account.
 The first \emph{volatile} weight function models the current traffic situation.
@@ -1007,7 +1008,7 @@ Maybe this could be traced to specific structures in road networks which then co
 
 \section{Detailed Performance Profiles by Instance}\label{sec:perf_profile_instance}
 
-\begin{figure}[t]
+\begin{figure}[h]
 \centering
 \includegraphics[width=.935\linewidth]{fig/detailed_perf_profile_time.pdf}
 \caption{
