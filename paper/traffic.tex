@@ -44,7 +44,7 @@
 %\relatedversiondetails[linktext={opt. text shown instead of the URL}, cite=DBLP:books/mk/GrayR93]{Classification (e.g. Full Version, Extended Version, Previous Version}{URL to related version} %linktext and cite are optional
 
 % \supplement{}%optional, e.g. related research data, source code, ... hosted on a repository like zenodo, figshare, GitHub, ...
-\supplementdetails[subcategory={Source Code}]{Software}{https://github.com/kit-algo/traffic_aware}
+\supplementdetails[subcategory={Source Code},swhid={swh:1:dir:656ed74654a81353c3de75f0a7a79bbc65ec5818;origin=https://github.com/kit-algo/traffic_aware;visit=swh:1:snp:5723d1737c2eef1db972db07720cf997e6191dc2;anchor=swh:1:rev:c9eaeb0cacdfc064ed4790865b587b66937c86d6}]{Software}{https://github.com/kit-algo/traffic_aware}
 %\supplementdetails[linktext={opt. text shown instead of the URL}, cite=DBLP:books/mk/GrayR93, subcategory={Description, Subcategory}, swhid={Software Heritage Identifier}]{General Classification (e.g. Software, Dataset, Model, ...)}{URL to related version} %linktext, cite, and subcategory are optional
 
 %\funding{(Optional) general funding statement \dots}%optional, to capture a funding statement, which applies to all authors. Please enter author specific funding statements as fifth argument of the \author macro.
@@ -118,7 +118,7 @@ As traffic feeds are derived from live data, they are inherently noisy and incom
 Simply exchanging free flow for live traffic travel times and then solving the classical shortest path problem may lead to problematic routes.
 For example, such routes may include undesired detours such as briefly using a parking area to bypass a jammed highway.
 % Another problem is when an alternative route around a traffic jam is suggested but the alternative is congested, too, despite this not being represented in the routing data due to a low-quality traffic feed.
-\newpage
+
 We therefore study an extended problem model, the \emph{shortest smooth path problem} (SSPP)~\cite{dss-tarrn-18}.
 To avoid undesired detours, a second weight function is taken into account.
 The first \emph{volatile} weight function models the current traffic situation.
@@ -637,9 +637,9 @@ However, we also need the shortest path trees.
 We therefore extend Lazy RPHAST to also compute shortest path trees.
 
 Dijkstra's algorithm on $\gchd$ yields initial parent pointers.
-We adjust Algorithm~\ref{algo:lazy_rphast} to continue to maintain these parent pointers and update them during arc relaxation.
+We adjust Algorithm~\ref{algo:lazy_rphast} to continue to maintain these parent pointers during arc relaxation.
 Thus, after having called \texttt{ComputeAndMemoizeDist}, we have the shortest path through the CH search space in $G^+$.
-Algorithm~\ref{algo:lazy_rphast_path} depicts the routine to efficiently unpack shortcuts on this path and retrieve full shortest path trees in the original graph.
+Algorithm~\ref{algo:lazy_rphast_path} depicts the routine to efficiently unpack shortcuts on this path and retrieve shortest path trees in the original graph.
 We use a bitvector $\mathtt{U}$ (using a clearlist for fast reinitialization) to mark vertices for which the shortest path has already been fully unpacked which is checked before any actual work is performed.
 Then, we have to call \texttt{ComputeAndMemoizeDist} to ensure that the path through the CH search space has been obtained for $u$.
 For vertices encountered through recursive shortcut unpacking this might have not happened before.
@@ -761,14 +761,6 @@ They are heavily skewed by outliers and there is no reason to assume a normal di
 In fact, \emph{median} running times for 1h queries of all algorithms on all instances are all below 2\,ms. % and the differences for the other query sets become only more extreme.
 Clearly, drawing statistically sound conclusions from this experiment requires a closer look.
 
-\begin{figure}
-\centering
-\includegraphics[width=\linewidth]{fig/combined_perf_profile.pdf}
-\caption{
-Relative performance profiles of our algorithms on all queries from Table~\ref{tab:data}.
-}\label{fig:perf_profile}
-\end{figure}
-
 Figure~\ref{fig:perf_profile} depicts \emph{performance profiles}~\cite{dolan2002benchmarking} for running times and obtained path lengths on all queries from Table~\ref{tab:data} combined.
 Investigating queries across all instances combined is reasonable because we study the relative performance of the different algorithms on each query.
 Let $\mathcal{A}$ be the set of algorithms, $\mathcal{Q}$ the set of queries and $\operatorname{obj}(a, q)$ denote the considered measurement from the computation of $a \in \mathcal{A}$ to answer $q \in \mathcal{Q}$.
@@ -778,6 +770,14 @@ The performance profile $\rho_a : [1,\infty) \to [0,1], \tau \mapsto \frac{|\{q 
 For computations that were aborted after 10 seconds, $\operatorname{obj}(a, q) = \infty$.
 For the sake of completeness, we also include the same performance profiles separated per instance and query set in the appendix (see Figure~\ref{fig:perf_profile_time} and \ref{fig:perf_profile_quality}).
 However, discussing the results in such detail is beyond the scope of this paper.
+
+\begin{figure}
+\centering
+\includegraphics[width=\linewidth]{fig/combined_perf_profile.pdf}
+\caption{
+Relative performance profiles of our algorithms on all queries from Table~\ref{tab:data}.
+}\label{fig:perf_profile}
+\end{figure}
 
 The running time performance profile in Figure~\ref{fig:perf_profile} allows for some more nuanced observations:
 IPF is the fastest algorithm on about 65\% of the queries and almost never more than 10 times slower than the fastest one.
